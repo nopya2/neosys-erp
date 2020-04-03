@@ -1,0 +1,23 @@
+export const activities = [
+    'Agroalimentaire',
+    'Art & Culture',
+    'Banque / Assurance',
+    'Bois / Papier / Carton / Imprimerie',
+    'BTP / Matériaux de construction',
+    'Chimie / Parachimie',
+    'Commerce / Négoce / Distribution',
+    'Édition / Communication / Multimédia',
+    'Education / Enseignement / Recherche',
+    'Électronique / Électricité',
+    'État / Administration',
+    'Études & conseils',
+    'Industrie pharmaceutique',
+    'Informatique / Télécoms',
+    'Machines & équipements / Automobile',
+    'Métallurgie / Travail du métal',
+    'Plastique / Caoutchouc',
+    'Services aux entreprises',
+    'Textile / Habillement / Chaussure',
+    'Transports / Logistique',
+    'Autre'
+]
