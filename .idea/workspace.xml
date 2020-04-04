@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="c7db8899-7959-41c1-8e2a-ef33ad755bbc" name="Default" comment="">
-      <change afterPath="$PROJECT_DIR$/project.lock" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
@@ -354,12 +354,13 @@
       <workItem from="1585164576562" duration="14181000" />
       <workItem from="1585254579521" duration="125895000" />
       <workItem from="1585658808923" duration="69673000" />
-      <workItem from="1585859520590" duration="12271000" />
+      <workItem from="1585859520590" duration="12877000" />
+      <workItem from="1585990767629" duration="264000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="851604000" />
+    <option name="totallyTimeSpent" value="852474000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="-8" y="-8" width="1382" height="744" extended-state="6" />
@@ -586,11 +587,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/app/Providers/AppServiceProvider.php">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-626">
-          <folding>
-            <element signature="e#33#65#0#PHP" expanded="true" />
-          </folding>
-        </state>
+        <state relative-caret-position="-626" />
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/app/Customer.php">
@@ -616,11 +613,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/app/Quote.php">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-554">
-          <folding>
-            <element signature="e#23#51#0#PHP" expanded="true" />
-          </folding>
-        </state>
+        <state relative-caret-position="-554" />
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/app/Observers/QuoteObserver.php">
@@ -632,9 +625,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="467">
           <caret line="68" column="9" selection-start-line="47" selection-start-column="8" selection-end-line="68" selection-end-column="9" />
-          <folding>
-            <element signature="e#40#60#0#PHP" expanded="true" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -649,9 +639,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="278">
           <caret line="33" column="22" selection-start-line="33" selection-start-column="22" selection-end-line="33" selection-end-column="22" />
-          <folding>
-            <element signature="e#40#59#0#PHP" expanded="true" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -736,9 +723,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="451">
           <caret line="93" column="94" selection-start-line="93" selection-start-column="34" selection-end-line="93" selection-end-column="94" />
-          <folding>
-            <element signature="e#23#62#0#PHP" expanded="true" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -746,23 +730,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="4881">
           <caret line="423" column="30" selection-start-line="423" selection-start-column="30" selection-end-line="423" selection-end-column="30" />
-          <folding>
-            <element signature="e#1293#1299#0" expanded="true" />
-            <element signature="e#1547#1553#0" expanded="true" />
-            <element signature="e#1890#1896#0" expanded="true" />
-            <element signature="e#2138#2144#0" expanded="true" />
-            <element signature="e#2440#2446#0" expanded="true" />
-            <element signature="e#2669#2675#0" expanded="true" />
-            <element signature="e#2943#2949#0" expanded="true" />
-            <element signature="e#3232#3238#0" expanded="true" />
-            <element signature="e#3473#3479#0" expanded="true" />
-            <element signature="e#3708#3714#0" expanded="true" />
-            <element signature="e#4425#4431#0" expanded="true" />
-            <element signature="n#style#0;n#div#0;n#div#0;n#div#1;n#div#1;n#form#0;n#template#0;n#!!top" expanded="true" />
-            <element signature="n#style#0;n#div#0;n#modal#1;n#form#0;n#template#0;n#!!top" expanded="true" />
-            <element signature="n#style#0;n#div#0;n#div#0;n#modal#1;n#form#0;n#template#0;n#!!top" expanded="true" />
-            <element signature="n#style#0;n#div#1;n#div#0;n#modal#1;n#form#0;n#template#0;n#!!top" expanded="true" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -770,9 +737,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="259">
           <caret line="423" column="42" selection-start-line="423" selection-start-column="42" selection-end-line="423" selection-end-column="42" />
-          <folding>
-            <element signature="e#40#57#0#PHP" expanded="true" />
-          </folding>
         </state>
       </provider>
     </entry>
