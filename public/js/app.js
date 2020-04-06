@@ -6452,6 +6452,9 @@ function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
 //
 //
 //
+//
+//
+//
 
 /* harmony default export */ __webpack_exports__["default"] = ({
   props: ['customers', 'taxes', 'old_quote', 'quote_items', 'quote_taxes', 'action'],
@@ -6735,6 +6738,9 @@ function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
           toast: true
         });
       });
+    },
+    printPurchaseOrder: function printPurchaseOrder(id) {
+      window.open("/quote/purchase-order/print/".concat(id), '_blank');
     }
   }
 });
@@ -26643,6 +26649,27 @@ var render = function() {
                   [
                     _c("i", { staticClass: "fa fa-print" }),
                     _vm._v(" Imprimer\n                    ")
+                  ]
+                ),
+                _vm._v(" "),
+                _c(
+                  "button",
+                  {
+                    staticClass: "dropdown-item",
+                    attrs: {
+                      type: "button",
+                      tabindex: "0",
+                      disabled: _vm.quote.is_billed || _vm.quote.expired
+                    },
+                    on: {
+                      click: function($event) {
+                        return _vm.printPurchaseOrder(_vm.quote.id)
+                      }
+                    }
+                  },
+                  [
+                    _c("i", { staticClass: "fa fa-print" }),
+                    _vm._v(" Imprimer bon de commande\n                    ")
                   ]
                 ),
                 _vm._v(" "),

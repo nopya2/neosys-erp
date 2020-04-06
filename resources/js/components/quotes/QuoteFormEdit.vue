@@ -18,6 +18,9 @@
                         <button class="dropdown-item" type="button" @click="printQuote(quote.id)">
                             <i class="fa fa-print"></i>&nbsp;Imprimer
                         </button>
+                        <button type="button" tabindex="0" class="dropdown-item" @click="printPurchaseOrder(quote.id)" :disabled="quote.is_billed || quote.expired">
+                            <i class="fa fa-print"></i>&nbsp;Imprimer bon de commande
+                        </button>
                         <button type="button" class="dropdown-item" @click="sendEmail()">
                             <i class="fa fa-envelope"></i>&nbsp;Envoyer
                         </button>
@@ -477,6 +480,9 @@
                             toast: true
                         })
                     });
+            },
+            printPurchaseOrder(id){
+                window.open(`/quote/purchase-order/print/${id}`, '_blank');
             }
 
 
