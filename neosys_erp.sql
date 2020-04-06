@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Hôte : 127.0.0.1
--- Généré le :  ven. 03 avr. 2020 à 02:08
+-- Généré le :  lun. 06 avr. 2020 à 08:14
 -- Version du serveur :  10.1.35-MariaDB
 -- Version de PHP :  7.2.9
 
@@ -155,6 +155,7 @@ CREATE TABLE `information` (
   `header` text,
   `quote_delay` int(11) DEFAULT NULL,
   `invoice_delay` int(11) DEFAULT NULL,
+  `purchase_order_delay` int(11) NOT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
@@ -163,8 +164,8 @@ CREATE TABLE `information` (
 -- Déchargement des données de la table `information`
 --
 
-INSERT INTO `information` (`id`, `social_reason`, `logo`, `address`, `phone1`, `phone2`, `email`, `country`, `city`, `bp`, `website`, `check_payable_to`, `transfer_to_account`, `code_bank`, `counter_code`, `account_number`, `rib_key`, `footer`, `header`, `quote_delay`, `invoice_delay`, `created_at`, `updated_at`) VALUES
-(1, 'Neosys Technologie S.A.R.L', 'logo.png', 'Ancienne SOBRAGA, en face de Multipresse/L\'UNION', '+241077454754', '+24166215333', 'infos@neosystechnologie.ga', 'Gabon', 'Libreville', NULL, 'https://neosystechnologie.ga', 'NEOSYS TECHNOLOGIE', 'BGFI  LOXIA N° 00165258211', '4003', '04100', '71008865012', '88', '<p><strong>NeoSys Technologies SARL</strong></p><p>Intégrateur des solutions informatiques</p><p>Audits - Conseils -Formations - Infogérance - Sécurité - Système et Réseaux</p><p>RCCM : 2014B18489 - NIF : 037719G – STAT. : 086847A</p><p>Tel : (+241) 07454754 - Email : infos@neosystechologie.ga</p>', NULL, 30, 15, '2020-03-16 08:45:00', '2020-03-29 18:49:26');
+INSERT INTO `information` (`id`, `social_reason`, `logo`, `address`, `phone1`, `phone2`, `email`, `country`, `city`, `bp`, `website`, `check_payable_to`, `transfer_to_account`, `code_bank`, `counter_code`, `account_number`, `rib_key`, `footer`, `header`, `quote_delay`, `invoice_delay`, `purchase_order_delay`, `created_at`, `updated_at`) VALUES
+(1, 'Neosys Technologie S.A.R.L', 'logo.png', 'Ancienne SOBRAGA, en face de Multipresse/L\'UNION', '+241077454754', '+24166215333', 'infos@neosystechnologie.ga', 'Gabon', 'Libreville', NULL, 'https://neosystechnologie.ga', 'NEOSYS TECHNOLOGIE', 'BGFI  LOXIA N° 00165258211', '4003', '04100', '71008865012', '88', '<p><strong>NeoSys Technologies SARL</strong></p><p>Intégrateur des solutions informatiques</p><p>Audits - Conseils -Formations - Infogérance - Sécurité - Système et Réseaux</p><p>RCCM : 2014B18489 - NIF : 037719G – STAT. : 086847A</p><p>Tel : (+241) 07454754 - Email : infos@neosystechologie.ga</p>', NULL, 30, 15, 14, '2020-03-16 08:45:00', '2020-04-05 23:14:00');
 
 -- --------------------------------------------------------
 
@@ -246,13 +247,6 @@ CREATE TABLE `invoice_recurrences` (
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
---
--- Déchargement des données de la table `invoice_recurrences`
---
-
-INSERT INTO `invoice_recurrences` (`id`, `user_id`, `invoice_id`, `start_date`, `end_date`, `period`, `occurence`, `created_at`, `updated_at`) VALUES
-(8, 1, 34, '2021-01-18 00:42:00', '2023-01-18 00:42:00', '12', 3, '2020-04-02 23:42:55', '2020-04-02 23:42:55');
-
 -- --------------------------------------------------------
 
 --
@@ -266,15 +260,6 @@ CREATE TABLE `invoice_recurrence_dates` (
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
---
--- Déchargement des données de la table `invoice_recurrence_dates`
---
-
-INSERT INTO `invoice_recurrence_dates` (`id`, `invoice_recurrence_id`, `date`, `created_at`, `updated_at`) VALUES
-(10, 8, '2021-01-18 00:42:00', '2020-04-02 23:42:55', '2020-04-02 23:42:55'),
-(11, 8, '2022-01-18 00:42:00', '2020-04-02 23:42:55', '2020-04-02 23:42:55'),
-(12, 8, '2023-01-18 00:42:00', '2020-04-02 23:42:55', '2020-04-02 23:42:55');
 
 -- --------------------------------------------------------
 
@@ -483,7 +468,8 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES
 (17, '2020_03_31_141624_create_credit_notes_table', 16),
 (18, '2020_04_01_164554_create_purchase_orders_table', 17),
 (19, '2020_04_02_125514_create_invoice_recurrences_table', 17),
-(20, '2020_04_02_141127_create_invoice_recurrence_dates_table', 18);
+(20, '2020_04_02_141127_create_invoice_recurrence_dates_table', 18),
+(22, '2020_04_05_205943_create_purchase_orders_table', 19);
 
 -- --------------------------------------------------------
 
@@ -555,9 +541,19 @@ INSERT INTO `payment_methods` (`id`, `name`, `created_at`, `updated_at`) VALUES
 
 CREATE TABLE `purchase_orders` (
   `id` bigint(20) UNSIGNED NOT NULL,
+  `quote_id` bigint(20) UNSIGNED NOT NULL,
+  `user_id` bigint(20) UNSIGNED DEFAULT NULL,
+  `purchase_order_number` varchar(6) NOT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+--
+-- Déchargement des données de la table `purchase_orders`
+--
+
+INSERT INTO `purchase_orders` (`id`, `quote_id`, `user_id`, `purchase_order_number`, `created_at`, `updated_at`) VALUES
+(1, 25, 1, '000005', '2020-04-05 22:52:10', '2020-04-05 22:52:10');
 
 -- --------------------------------------------------------
 
@@ -810,7 +806,10 @@ ALTER TABLE `payment_methods`
 -- Index pour la table `purchase_orders`
 --
 ALTER TABLE `purchase_orders`
-  ADD PRIMARY KEY (`id`);
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `purchase_order_number` (`purchase_order_number`),
+  ADD KEY `purchase_orders_quote_id_index` (`quote_id`),
+  ADD KEY `purchase_orders_user_id_index` (`user_id`);
 
 --
 -- Index pour la table `quotes`
@@ -886,13 +885,13 @@ ALTER TABLE `invoices`
 -- AUTO_INCREMENT pour la table `invoice_recurrences`
 --
 ALTER TABLE `invoice_recurrences`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
 
 --
 -- AUTO_INCREMENT pour la table `invoice_recurrence_dates`
 --
 ALTER TABLE `invoice_recurrence_dates`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=61;
 
 --
 -- AUTO_INCREMENT pour la table `items`
@@ -904,7 +903,7 @@ ALTER TABLE `items`
 -- AUTO_INCREMENT pour la table `migrations`
 --
 ALTER TABLE `migrations`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=21;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=23;
 
 --
 -- AUTO_INCREMENT pour la table `payments`
@@ -922,7 +921,7 @@ ALTER TABLE `payment_methods`
 -- AUTO_INCREMENT pour la table `purchase_orders`
 --
 ALTER TABLE `purchase_orders`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT pour la table `quotes`
@@ -1015,6 +1014,13 @@ ALTER TABLE `payments`
   ADD CONSTRAINT `payments_invoice_id_foreign` FOREIGN KEY (`invoice_id`) REFERENCES `invoices` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   ADD CONSTRAINT `payments_payment_method_id_foreign` FOREIGN KEY (`payment_method_id`) REFERENCES `payment_methods` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
   ADD CONSTRAINT `payments_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL ON UPDATE CASCADE;
+
+--
+-- Contraintes pour la table `purchase_orders`
+--
+ALTER TABLE `purchase_orders`
+  ADD CONSTRAINT `purchase_orders_quote_id_foreign` FOREIGN KEY (`quote_id`) REFERENCES `quotes` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  ADD CONSTRAINT `purchase_orders_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL ON UPDATE CASCADE;
 
 --
 -- Contraintes pour la table `quotes`
