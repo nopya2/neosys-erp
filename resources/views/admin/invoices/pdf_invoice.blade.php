@@ -114,7 +114,7 @@
             </tr>
             <tr>
                 <td colspan="2" style="text-align: right; font-style: italic">
-                    A {{ $information->city }}, le <span style="font-weight: bold">{{ $invoice->updated_at->format('d/m/Y') }}</span><br>
+                    A {{ $information->city }}, le <span style="font-weight: bold">{{ date('d/m/Y') }}</span><br>
                     Echéance: {{ $information->invoice_delay }} jours<br>
                     Soit: le {{ $invoice->expire_at->format('d/m/Y') }}
                 </td>

@@ -15,7 +15,19 @@ class CreatePurchaseOrdersTable extends Migration
     {
         Schema::create('purchase_orders', function (Blueprint $table) {
             $table->bigIncrements('id');
+            $table->unsignedBigInteger('quote_id');
+            $table->unsignedBigInteger('user_id')->nullable();
             $table->timestamps();
+
+            $table->index('quote_id');
+            $table->foreign('quote_id')->references('id')->on('quotes')
+                ->onDelete('cascade')
+                ->onUpdate('cascade');
+
+            $table->index('user_id');
+            $table->foreign('user_id')->references('id')->on('users')
+                ->onDelete('set null')
+                ->onUpdate('cascade');
         });
     }
 

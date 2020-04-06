@@ -65,6 +65,7 @@ Route::post('/quote/{quote}/edit', 'QuoteController@update')->name('quote.update
 Route::get('/quote/print/{id}', 'QuoteController@printQuote')->name('quote.print')->middleware('auth');
 Route::get('/quote/bill/{quote}', 'QuoteController@billQuote')->name('quote.bill')->middleware('auth');
 Route::get('/quote/duplicate/{quote}', 'QuoteController@duplicateQuote')->name('quote.duplicate')->middleware('auth');
+Route::get('/quote/purchase-order/print/{quote}', 'QuoteController@printPurchaseOrder')->name('quote.purchase-order.print')->middleware('auth');
 
 /***** Invoices ****/
 Route::get('/invoices', 'InvoiceController@home')->name('invoice.index')->middleware('auth');

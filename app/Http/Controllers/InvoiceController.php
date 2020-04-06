@@ -448,6 +448,15 @@ class InvoiceController extends Controller
 
     }
 
+    public function cancelRecurrence($recurrence){
+        $recurrence = InvoiceRecurrence::find($recurrence);
+        $invoice = $recurrence->invoice;
+
+        if($recurrence->delete()){
+            return new InvoiceResource($recurrence->invoice);
+        }
+    }
+
     /**
      * Remove the specified resource from storage.
      *

@@ -108,7 +108,7 @@
                 </td>
             </tr>
             <tr>
-                <td colspan="2" style="text-align: right; font-style: italic">A {{ $information->city }}, le <span style="font-weight: bold">{{ $quote->updated_at->format('d/m/Y') }}</span></td>
+                <td colspan="2" style="text-align: right; font-style: italic">A {{ $information->city }}, le <span style="font-weight: bold">{{ date('d/m/Y') }}</span></td>
             </tr>
             </tbody>
         </table>

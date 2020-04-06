@@ -94,6 +94,7 @@ class InformationController extends Controller
             'footer' => ['required'],
             'quote_delay' => [],
             'invoice_delay' => [],
+            'purchase_order_delay' => [],
             'updated_at' => [],
         ]);
 
@@ -116,6 +117,7 @@ class InformationController extends Controller
         $information->footer = $data['footer'];
         $information->quote_delay = $data['quote_delay'];
         $information->invoice_delay = $data['invoice_delay'];
+        $information->purchase_order_delay = $data['purchase_order_delay'];
         $information->updated_at = new \DateTime();
 
         $information->save();

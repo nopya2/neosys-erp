@@ -74,6 +74,10 @@
                                                     <i class="fa fa-print"></i>&nbsp;Imprimer
                                                 </button>
                                                 <div class="dropdown-divider"></div>
+                                                <button type="button" tabindex="0" class="dropdown-item" @click="printPurchaseOrder(quote.id)" :disabled="quote.is_billed || quote.expired">
+                                                    <i class="fa fa-print"></i>&nbsp;Imprimer bon de commande
+                                                </button>
+                                                <div class="dropdown-divider"></div>
                                                 <button type="button" class="dropdown-item" @click="duplicateQuote(quote.id)">
                                                     <i class="fa fa-clone"></i>&nbsp;Dupliquer
                                                 </button>
@@ -283,6 +287,9 @@
             duplicateQuote(id){
                 window.location = `/quote/duplicate/${id}`;
             },
+            printPurchaseOrder(id){
+                window.open(`/quote/purchase-order/print/${id}`, '_blank');
+            }
 
         }
 

@@ -39,6 +39,10 @@ class Quote extends Model
         return $this->belongsToMany('App\Item');
     }
 
+    public function purchaseOrder(){
+        return $this->hasOne('App\PurchaseOrder');
+    }
+
     public function getDeadlineAttribute(){
 
         $now = new \DateTime();

@@ -198,8 +198,16 @@
                             </div>
                             <div class="col-md-6">
                                 <div class="form-group">
-                                    <label>Delai de la facture </label>
+                                    <label>Délai de la facture </label>
                                     <input type="number" class="form-control" name="invoice_delay" v-model="$v.information.invoice_delay.$model"/>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>Délai du bon de commande </label>
+                                    <input type="number" class="form-control" name="purchase_order_delay" v-model="$v.information.purchase_order_delay.$model"/>
                                 </div>
                             </div>
                         </div>
@@ -249,6 +257,7 @@
                     footer: '',
                     quote_delay: '',
                     invoice_delay: '',
+                    purchase_order_delay: 0,
                     updated_at: ''
                 },
                 editor: ClassicEditor,
@@ -321,7 +330,8 @@
                 },
                 invoice_delay: {
 
-                }
+                },
+                purchase_order_delay: {}
             },
         },
         mounted() {

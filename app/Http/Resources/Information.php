@@ -38,6 +38,7 @@ class Information extends JsonResource
             'invoice_delay' => $this->invoice_delay,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
+            'purchase_order_delay' => $this->purchase_order_delay
 
         ];
     }

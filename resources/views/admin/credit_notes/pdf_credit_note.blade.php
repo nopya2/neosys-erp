@@ -153,7 +153,7 @@
             </tr>
             <tr>
                 <td colspan="2" style="text-align: right; font-style: italic">
-                    A {{ $information->city }}, le <span style="font-weight: bold">{{ $credit_note->updated_at->format('d/m/Y') }}</span><br>
+                    A {{ $information->city }}, le <span style="font-weight: bold">{{ date('d/m/Y') }}</span><br>
                 </td>
             </tr>
             </tbody>

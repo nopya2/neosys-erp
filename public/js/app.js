@@ -404,6 +404,14 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
 //
 //
 //
+//
+//
+//
+//
+//
+//
+//
+//
 
 
 /* harmony default export */ __webpack_exports__["default"] = ({
@@ -431,6 +439,7 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
         footer: '',
         quote_delay: '',
         invoice_delay: '',
+        purchase_order_delay: 0,
         updated_at: ''
       },
       editor: _ckeditor_ckeditor5_build_classic__WEBPACK_IMPORTED_MODULE_1___default.a,
@@ -489,7 +498,8 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
         required: vuelidate_lib_validators__WEBPACK_IMPORTED_MODULE_0__["required"]
       },
       quote_delay: {},
-      invoice_delay: {}
+      invoice_delay: {},
+      purchase_order_delay: {}
     }
   },
   mounted: function mounted() {},
@@ -4445,6 +4455,9 @@ function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
 //
 //
 //
+//
+//
+//
 
 
 
@@ -4907,6 +4920,47 @@ function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
           timer: 5000,
           toast: true
         });
+      });
+    },
+    cancelRecurrence: function cancelRecurrence() {
+      var _this9 = this;
+
+      this.$swal({
+        title: 'Supprimer',
+        text: 'Etes-vous sur de vouloir annuler la récurrence?',
+        showCancelButton: true,
+        confirmButtonText: 'Supprimer',
+        confirmButtonColor: '#C82333',
+        showLoaderOnConfirm: true,
+        preConfirm: function preConfirm(login) {
+          return fetch("/api/invoice/cancel-recurrence/".concat(_this9.invoice.recurrence.id, "?api_token=").concat(_this9.api_token), {
+            method: 'delete'
+          }).then(function (response) {
+            if (!response.ok) {
+              throw new Error(response.statusText);
+            }
+
+            return response.json();
+          })["catch"](function (error) {
+            _this9.$swal.showValidationMessage("Request failed: ".concat(error));
+          });
+        },
+        allowOutsideClick: function allowOutsideClick() {
+          return !_this9.$swal.isLoading();
+        }
+      }).then(function (result) {
+        if (result.value) {
+          _this9.$swal({
+            position: 'top-end',
+            icon: 'warning',
+            title: 'La récurrence a été annulée!',
+            showConfirmButton: false,
+            timer: 5000,
+            toast: true
+          });
+
+          _this9.invoice = result.value.data;
+        }
       });
     }
   }
@@ -6837,6 +6891,10 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
+//
+//
+//
 /* harmony default export */ __webpack_exports__["default"] = ({
   mounted: function mounted() {// console.log('Component mounted.')
   },
@@ -6971,6 +7029,9 @@ __webpack_require__.r(__webpack_exports__);
     },
     duplicateQuote: function duplicateQuote(id) {
       window.location = "/quote/duplicate/".concat(id);
+    },
+    printPurchaseOrder: function printPurchaseOrder(id) {
+      window.open("/quote/purchase-order/print/".concat(id), '_blank');
     }
   }
 });
@@ -16792,7 +16853,7 @@ var render = function() {
                 _vm._v(" "),
                 _c("div", { staticClass: "col-md-6" }, [
                   _c("div", { staticClass: "form-group" }, [
-                    _c("label", [_vm._v("Delai de la facture ")]),
+                    _c("label", [_vm._v("Délai de la facture ")]),
                     _vm._v(" "),
                     _c("input", {
                       directives: [
@@ -16815,6 +16876,43 @@ var render = function() {
                           }
                           _vm.$set(
                             _vm.$v.information.invoice_delay,
+                            "$model",
+                            $event.target.value
+                          )
+                        }
+                      }
+                    })
+                  ])
+                ])
+              ]),
+              _vm._v(" "),
+              _c("div", { staticClass: "row" }, [
+                _c("div", { staticClass: "col-md-6" }, [
+                  _c("div", { staticClass: "form-group" }, [
+                    _c("label", [_vm._v("Délai du bon de commande ")]),
+                    _vm._v(" "),
+                    _c("input", {
+                      directives: [
+                        {
+                          name: "model",
+                          rawName: "v-model",
+                          value: _vm.$v.information.purchase_order_delay.$model,
+                          expression:
+                            "$v.information.purchase_order_delay.$model"
+                        }
+                      ],
+                      staticClass: "form-control",
+                      attrs: { type: "number", name: "purchase_order_delay" },
+                      domProps: {
+                        value: _vm.$v.information.purchase_order_delay.$model
+                      },
+                      on: {
+                        input: function($event) {
+                          if ($event.target.composing) {
+                            return
+                          }
+                          _vm.$set(
+                            _vm.$v.information.purchase_order_delay,
                             "$model",
                             $event.target.value
                           )
@@ -22747,21 +22845,38 @@ var render = function() {
                   ]
                 ),
                 _vm._v(" "),
-                _c(
-                  "button",
-                  {
-                    staticClass: "dropdown-item",
-                    attrs: {
-                      type: "button",
-                      disabled: _vm.invoice.status == 0
-                    },
-                    on: { click: _vm.addRecurrence }
-                  },
-                  [
-                    _c("i", { staticClass: "fa fa-clock" }),
-                    _vm._v(" Récurrence\n                    ")
-                  ]
-                ),
+                !_vm.invoice.recurrence
+                  ? _c(
+                      "button",
+                      {
+                        staticClass: "dropdown-item",
+                        attrs: {
+                          type: "button",
+                          disabled: _vm.invoice.status == 0
+                        },
+                        on: { click: _vm.addRecurrence }
+                      },
+                      [
+                        _c("i", { staticClass: "fa fa-clock" }),
+                        _vm._v(" Récurrence\n                    ")
+                      ]
+                    )
+                  : _vm._e(),
+                _vm._v(" "),
+                _vm.invoice.recurrence
+                  ? _c(
+                      "button",
+                      {
+                        staticClass: "dropdown-item",
+                        attrs: { type: "button" },
+                        on: { click: _vm.cancelRecurrence }
+                      },
+                      [
+                        _c("i", { staticClass: "fa fa-clock" }),
+                        _vm._v(" Annuler la Récurrence\n                    ")
+                      ]
+                    )
+                  : _vm._e(),
                 _vm._v(" "),
                 _c("div", { staticClass: "dropdown-divider" }),
                 _vm._v(" "),
@@ -27534,6 +27649,38 @@ var render = function() {
                                           }),
                                           _vm._v(
                                             " Imprimer\n                                            "
+                                          )
+                                        ]
+                                      ),
+                                      _vm._v(" "),
+                                      _c("div", {
+                                        staticClass: "dropdown-divider"
+                                      }),
+                                      _vm._v(" "),
+                                      _c(
+                                        "button",
+                                        {
+                                          staticClass: "dropdown-item",
+                                          attrs: {
+                                            type: "button",
+                                            tabindex: "0",
+                                            disabled:
+                                              quote.is_billed || quote.expired
+                                          },
+                                          on: {
+                                            click: function($event) {
+                                              return _vm.printPurchaseOrder(
+                                                quote.id
+                                              )
+                                            }
+                                          }
+                                        },
+                                        [
+                                          _c("i", {
+                                            staticClass: "fa fa-print"
+                                          }),
+                                          _vm._v(
+                                            " Imprimer bon de commande\n                                            "
                                           )
                                         ]
                                       ),

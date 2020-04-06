@@ -5,6 +5,7 @@ namespace App\Http\Resources;
 use Illuminate\Http\Resources\Json\JsonResource;
 use App\Http\Resources\Payment as PaymentResource;
 use App\Http\Resources\Customer as CustomerResource;
+use App\Http\Resources\InvoiceRecurrenceResource;
 
 class Invoice extends JsonResource
 {
@@ -40,8 +41,8 @@ class Invoice extends JsonResource
             'status' => $this->status,
             'is_paid' => $this->is_paid,
             'amount_paid' => $this->amount_paid,
-            'amount_remaining' => $this->amount_remaining
-
+            'amount_remaining' => $this->amount_remaining,
+            'recurrence' => new InvoiceRecurrenceResource($this->recurrence),
         ];
     }
 }

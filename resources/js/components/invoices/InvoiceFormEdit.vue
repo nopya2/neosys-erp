@@ -24,8 +24,11 @@
                         <button type="button" class="dropdown-item" @click="convertInvoice(invoice.id)" :disabled="invoice.status == 0 || invoice.amount_paid > 0">
                             <i class="fa fa-file"></i>&nbsp;Convertir en facture d'avoir
                         </button>
-                        <button type="button" class="dropdown-item" :disabled="invoice.status == 0" @click="addRecurrence">
+                        <button type="button" class="dropdown-item" :disabled="invoice.status == 0" @click="addRecurrence" v-if="!invoice.recurrence">
                             <i class="fa fa-clock"></i>&nbsp;Récurrence
+                        </button>
+                        <button type="button" class="dropdown-item" @click="cancelRecurrence" v-if="invoice.recurrence">
+                            <i class="fa fa-clock"></i>&nbsp;Annuler la Récurrence
                         </button>
                         <div class="dropdown-divider"></div>
                         <button type="button" class="dropdown-item" :disabled="invoice.status == 0" @click="printInvoice(invoice.id)">
@@ -840,6 +843,43 @@
                             toast: true
                         })
                     });
+            },
+            cancelRecurrence(){
+                this.$swal({
+                    title: 'Supprimer',
+                    text: 'Etes-vous sur de vouloir annuler la récurrence?',
+                    showCancelButton: true,
+                    confirmButtonText: 'Supprimer',
+                    confirmButtonColor: '#C82333',
+                    showLoaderOnConfirm: true,
+                    preConfirm: (login) => {
+                        return fetch(`/api/invoice/cancel-recurrence/${this.invoice.recurrence.id}?api_token=${this.api_token}`, { method: 'delete' })
+                            .then(response => {
+                                if (!response.ok) {
+                                    throw new Error(response.statusText)
+                                }
+                                return response.json()
+                            })
+                            .catch(error => {
+                                this.$swal.showValidationMessage(
+                                    `Request failed: ${error}`
+                                )
+                            })
+                    },
+                    allowOutsideClick: () => !this.$swal.isLoading()
+                }).then((result) => {
+                    if (result.value) {
+                        this.$swal({
+                            position: 'top-end',
+                            icon: 'warning',
+                            title: 'La récurrence a été annulée!',
+                            showConfirmButton: false,
+                            timer: 5000,
+                            toast: true
+                        })
+                        this.invoice = result.value.data;
+                    }
+                })
             }
 
 

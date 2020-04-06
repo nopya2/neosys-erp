@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Information;
 use App\Invoice;
 use App\Item;
+use App\PurchaseOrder;
 use App\Quote;
 use App\Http\Resources\Quote as QuoteResource;
 use App\Customer;
@@ -416,6 +417,36 @@ class QuoteController extends Controller
         });
 
         return new QuoteResource($quote);
+    }
+
+    public function printPurchaseOrder($quote){
+        $information = Information::find(1);
+        $quote = Quote::findOrFail($quote);
+        //Creation du bon de livraison
+        //On verifie si ce numero de bon de commande a deja ete enregistre
+        //SI NON on genere un nouveau bon de commande
+        //SI OUI on affiche juste le PDF
+        $purchaseOrder = PurchaseOrder::where('purchase_order_number', $quote->quote_number)->first();
+        if(!$purchaseOrder){
+            $purchaseOrder = PurchaseOrder::forceCreate([
+                'quote_id' => $quote->id,
+                'user_id' => Auth::user()->id,
+                'purchase_order_number' => $quote->quote_number
+            ]);
+        }
+
+        $numberToWords = new NumberToWords();
+        $numberTransformer = $numberToWords->getNumberTransformer('fr');
+        $amountToWords =  $numberTransformer->toWords(ceil($quote->amount));
+        $pdf = PDF::loadView('admin.quotes.pdf_purchase_order', [
+            'quote' => $quote,
+            'amount_to_words' => $amountToWords,
+            'information' => $information
+        ]);
+
+        return $pdf->stream('NST-Q'.$quote->quote_number.'.pdf');
+
+//        return $pdf->download($quote->quote_number.'.pdf');
     }
 
     /**

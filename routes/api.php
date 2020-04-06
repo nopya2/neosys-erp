@@ -115,6 +115,8 @@ Route::middleware('auth:api')->post('invoice/send-email', 'InvoiceController@sen
 Route::middleware('auth:api')->delete('invoice/{invoice}', 'InvoiceController@destroy');
 //Add recurrence to invoice
 Route::middleware('auth:api')->post('invoice/add-recurrence', 'InvoiceController@addRecurrence');
+//Cancel invoice recurrence
+Route::middleware('auth:api')->delete('invoice/cancel-recurrence/{invoice}', 'InvoiceController@cancelRecurrence');
 
 //Convert invoice in credit note
 Route::middleware('auth:api')->post('credit-note', 'CreditNoteController@store');
