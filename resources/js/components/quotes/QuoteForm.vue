@@ -4,15 +4,15 @@
             <div class="col-md-6">
                 <div class="position-relative form-group">
                     <label for="quote_number" class="">Numéro de devis</label>
-                    <input name="quote_number" id="quote_number" placeholder="" type="text" class="form-control" v-model="$v.quote.quote_number.$model" readonly>
+                    <input name="quote_number" id="quote_number" placeholder="" type="text" class="form-control form-control-sm" v-model="$v.quote.quote_number.$model" readonly>
                     <small class="form-text text-danger" v-if="!$v.quote.quote_number.required">Champs requis.</small>
                 </div>
             </div>
             <div class="col-md-6">
                 <div class="position-relative form-group">
-                    <label for="customer" class="">Client</label>
-                    <select class="form-control" name="customer" id="customer" v-model="$v.quote.customer_id.$model">
-                        <option value="">--- Selectionnez un client s'il vous plait --</option>
+                    <label for="customer" class="">Client <i class="fa fa-plus-circle text-success" style="cursor: pointer"></i></label>
+                    <select class="form-control form-control-sm" name="customer_id" id="customer" v-model="$v.quote.customer_id.$model">
+                        <!--<option value="">-&#45;&#45; Selectionnez un client s'il vous plait &#45;&#45;</option>-->
                         <option v-for="customer in customers" v-bind:value="customer.id">{{ customer.company_name}}</option>
                     </select>
                     <small class="form-text text-danger" v-if="!$v.quote.customer_id.required">Champs requis.</small>
@@ -23,7 +23,7 @@
             <div class="col-md-6">
                 <div class="position-relative form-group">
                     <label for="title" class="">Titre du devis</label>
-                    <input name="title" id="title" placeholder="" type="text" class="form-control" v-model="$v.quote.title.$model">
+                    <input name="title" id="title" placeholder="" type="text" class="form-control form-control-sm" v-model="$v.quote.title.$model">
                     <small class="form-text text-danger" v-if="!$v.quote.title.required">Champs requis.</small>
                 </div>
             </div>
@@ -162,7 +162,7 @@
                 quote: {
                     quote_number: '',
                     title: '',
-                    customer_id: '',
+                    customer_id: 1,
                     items: [],
                     taxes: [],
                     amount_et: 0,
@@ -195,13 +195,12 @@
             }
         },
         mounted() {
-            // $("#country").select2({placeholder:"Sélectionnez un pays"})
-            // $("#city").select2({placeholder:"Sélectionnez une ville"})
+            $("#customer").select2({placeholder:"Sélectionnez un client"})
         },
         created(){
             if (window.localStorage.getItem('authUser')) {
-                const authCustomer = JSON.parse(window.localStorage.getItem('authUser'))
-                this.api_token = authCustomer.api_token
+                const auth_user = JSON.parse(window.localStorage.getItem('authUser'))
+                this.api_token = auth_user.api_token
             }
 
             this.csrfToken = document.querySelector('meta[name="csrf-token"]').content

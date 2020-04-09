@@ -48,7 +48,7 @@
             <div class="col-md-6">
                 <div class="position-relative form-group">
                     <label for="quote_number" class="">Numéro de devis</label>
-                    <input name="quote_number" id="quote_number" placeholder="" type="text" class="form-control" v-model="$v.quote.quote_number.$model" readonly>
+                    <input name="quote_number" id="quote_number" placeholder="" type="text" class="form-control form-control-sm" v-model="$v.quote.quote_number.$model" readonly>
                     <small class="form-text text-danger" v-if="!$v.quote.quote_number.required">Champs requis.</small>
                 </div>
             </div>
@@ -73,7 +73,7 @@
             <div class="col-md-6">
                 <div class="position-relative form-group">
                     <label for="title" class="">Titre du devis</label>
-                    <input name="title" id="title" placeholder="" type="text" class="form-control" v-model="$v.quote.title.$model" :readonly="quote.expired || quote.is_billed">
+                    <input name="title" id="title" placeholder="" type="text" class="form-control form-control-sm" v-model="$v.quote.title.$model" :readonly="quote.expired || quote.is_billed">
                     <small class="form-text text-danger" v-if="!$v.quote.title.required">Champs requis.</small>
                 </div>
             </div>

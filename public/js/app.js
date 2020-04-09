@@ -6075,7 +6075,7 @@ __webpack_require__.r(__webpack_exports__);
       quote: {
         quote_number: '',
         title: '',
-        customer_id: '',
+        customer_id: 1,
         items: [],
         taxes: [],
         amount_et: 0,
@@ -6105,13 +6105,15 @@ __webpack_require__.r(__webpack_exports__);
       }
     }
   },
-  mounted: function mounted() {// $("#country").select2({placeholder:"Sélectionnez un pays"})
-    // $("#city").select2({placeholder:"Sélectionnez une ville"})
+  mounted: function mounted() {
+    $("#customer").select2({
+      placeholder: "Sélectionnez un client"
+    });
   },
   created: function created() {
     if (window.localStorage.getItem('authUser')) {
-      var authCustomer = JSON.parse(window.localStorage.getItem('authUser'));
-      this.api_token = authCustomer.api_token;
+      var auth_user = JSON.parse(window.localStorage.getItem('authUser'));
+      this.api_token = auth_user.api_token;
     }
 
     this.csrfToken = document.querySelector('meta[name="csrf-token"]').content;
@@ -25939,7 +25941,7 @@ var render = function() {
                   expression: "$v.quote.quote_number.$model"
                 }
               ],
-              staticClass: "form-control",
+              staticClass: "form-control form-control-sm",
               attrs: {
                 name: "quote_number",
                 id: "quote_number",
@@ -25972,7 +25974,7 @@ var render = function() {
         _vm._v(" "),
         _c("div", { staticClass: "col-md-6" }, [
           _c("div", { staticClass: "position-relative form-group" }, [
-            _c("label", { attrs: { for: "customer" } }, [_vm._v("Client")]),
+            _vm._m(0),
             _vm._v(" "),
             _c(
               "select",
@@ -25985,8 +25987,8 @@ var render = function() {
                     expression: "$v.quote.customer_id.$model"
                   }
                 ],
-                staticClass: "form-control",
-                attrs: { name: "customer", id: "customer" },
+                staticClass: "form-control form-control-sm",
+                attrs: { name: "customer_id", id: "customer" },
                 on: {
                   change: function($event) {
                     var $$selectedVal = Array.prototype.filter
@@ -26005,18 +26007,12 @@ var render = function() {
                   }
                 }
               },
-              [
-                _c("option", { attrs: { value: "" } }, [
-                  _vm._v("--- Selectionnez un client s'il vous plait --")
-                ]),
-                _vm._v(" "),
-                _vm._l(_vm.customers, function(customer) {
-                  return _c("option", { domProps: { value: customer.id } }, [
-                    _vm._v(_vm._s(customer.company_name))
-                  ])
-                })
-              ],
-              2
+              _vm._l(_vm.customers, function(customer) {
+                return _c("option", { domProps: { value: customer.id } }, [
+                  _vm._v(_vm._s(customer.company_name))
+                ])
+              }),
+              0
             ),
             _vm._v(" "),
             !_vm.$v.quote.customer_id.required
@@ -26044,7 +26040,7 @@ var render = function() {
                   expression: "$v.quote.title.$model"
                 }
               ],
-              staticClass: "form-control",
+              staticClass: "form-control form-control-sm",
               attrs: {
                 name: "title",
                 id: "title",
@@ -26075,7 +26071,7 @@ var render = function() {
         _c("div", { staticClass: "col-md-12" }, [
           _c("div", { staticClass: "table-responsive" }, [
             _c("table", { staticClass: "table" }, [
-              _vm._m(0),
+              _vm._m(1),
               _vm._v(" "),
               _c(
                 "tbody",
@@ -26530,6 +26526,18 @@ var staticRenderFns = [
     var _vm = this
     var _h = _vm.$createElement
     var _c = _vm._self._c || _h
+    return _c("label", { attrs: { for: "customer" } }, [
+      _vm._v("Client "),
+      _c("i", {
+        staticClass: "fa fa-plus-circle text-success",
+        staticStyle: { cursor: "pointer" }
+      })
+    ])
+  },
+  function() {
+    var _vm = this
+    var _h = _vm.$createElement
+    var _c = _vm._self._c || _h
     return _c("thead", [
       _c("tr", [
         _c("th", [_vm._v("Désignation")]),
@@ -26775,7 +26783,7 @@ var render = function() {
                   expression: "$v.quote.quote_number.$model"
                 }
               ],
-              staticClass: "form-control",
+              staticClass: "form-control form-control-sm",
               attrs: {
                 name: "quote_number",
                 id: "quote_number",
@@ -26855,7 +26863,7 @@ var render = function() {
                   expression: "$v.quote.title.$model"
                 }
               ],
-              staticClass: "form-control",
+              staticClass: "form-control form-control-sm",
               attrs: {
                 name: "title",
                 id: "title",
