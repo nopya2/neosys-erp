@@ -95,16 +95,16 @@
                         <tbody>
                         <tr v-for="(item, index) in quote.items" :key="index">
                             <td>
-                                <textarea class="form-control" type="text" name="label" rows="1" v-model="item.label" :readonly="quote.expired || quote.is_billed"></textarea>
+                                <textarea class="form-control form-control-sm" type="text" name="label" rows="1" v-model="item.label" :readonly="quote.expired || quote.is_billed"></textarea>
                             </td>
                             <td>
-                                <input class="form-control" type="number" name="pu" v-model="item.pu" v-on:input="editItem(item)" :readonly="quote.expired || quote.is_billed">
+                                <input class="form-control form-control-sm" type="number" name="pu" v-model="item.pu" v-on:input="editItem(item)" :readonly="quote.expired || quote.is_billed">
                             </td>
                             <td>
-                                <input class="form-control" type="number" name="qty" v-model="item.qty" v-on:input="editItem(item)" :readonly="quote.expired || quote.is_billed">
+                                <input class="form-control form-control-sm" type="number" name="qty" v-model="item.qty" v-on:input="editItem(item)" :readonly="quote.expired || quote.is_billed">
                             </td>
                             <td>
-                                <input class="form-control" type="number" name="amount" readonly v-model="item.amount">
+                                <input class="form-control form-control-sm" type="number" name="amount" readonly v-model="item.amount">
                             </td>
                             <td>
                                 <button class="btn btn-danger btn-sm" @click="removeItem(index)" type="button" title="Retirer l'élément"

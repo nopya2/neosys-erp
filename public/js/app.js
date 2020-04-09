@@ -26092,7 +26092,7 @@ var render = function() {
                               expression: "item.label"
                             }
                           ],
-                          staticClass: "form-control",
+                          staticClass: "form-control form-control-sm",
                           attrs: { type: "text", name: "label", rows: "1" },
                           domProps: { value: item.label },
                           on: {
@@ -26116,7 +26116,7 @@ var render = function() {
                               expression: "item.pu"
                             }
                           ],
-                          staticClass: "form-control",
+                          staticClass: "form-control form-control-sm",
                           attrs: { type: "number", name: "pu" },
                           domProps: { value: item.pu },
                           on: {
@@ -26145,7 +26145,7 @@ var render = function() {
                               expression: "item.qty"
                             }
                           ],
-                          staticClass: "form-control",
+                          staticClass: "form-control form-control-sm",
                           attrs: { type: "number", name: "qty" },
                           domProps: { value: item.qty },
                           on: {
@@ -26174,7 +26174,7 @@ var render = function() {
                               expression: "item.amount"
                             }
                           ],
-                          staticClass: "form-control",
+                          staticClass: "form-control form-control-sm",
                           attrs: {
                             type: "number",
                             name: "amount",
@@ -26904,7 +26904,7 @@ var render = function() {
                               expression: "item.label"
                             }
                           ],
-                          staticClass: "form-control",
+                          staticClass: "form-control form-control-sm",
                           attrs: {
                             type: "text",
                             name: "label",
@@ -26933,7 +26933,7 @@ var render = function() {
                               expression: "item.pu"
                             }
                           ],
-                          staticClass: "form-control",
+                          staticClass: "form-control form-control-sm",
                           attrs: {
                             type: "number",
                             name: "pu",
@@ -26966,7 +26966,7 @@ var render = function() {
                               expression: "item.qty"
                             }
                           ],
-                          staticClass: "form-control",
+                          staticClass: "form-control form-control-sm",
                           attrs: {
                             type: "number",
                             name: "qty",
@@ -26999,7 +26999,7 @@ var render = function() {
                               expression: "item.amount"
                             }
                           ],
-                          staticClass: "form-control",
+                          staticClass: "form-control form-control-sm",
                           attrs: {
                             type: "number",
                             name: "amount",

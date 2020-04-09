@@ -45,16 +45,16 @@
                         <tbody>
                         <tr v-for="(item, index) in quote.items" :key="index">
                             <td>
-                                <textarea class="form-control" type="text" name="label" rows="1" v-model="item.label"></textarea>
+                                <textarea class="form-control form-control-sm" type="text" name="label" rows="1" v-model="item.label"></textarea>
                             </td>
                             <td>
-                                <input class="form-control" type="number" name="pu" v-model="item.pu" v-on:input="editItem(item)">
+                                <input class="form-control form-control-sm" type="number" name="pu" v-model="item.pu" v-on:input="editItem(item)">
                             </td>
                             <td>
-                                <input class="form-control" type="number" name="qty" v-model="item.qty" v-on:input="editItem(item)">
+                                <input class="form-control form-control-sm" type="number" name="qty" v-model="item.qty" v-on:input="editItem(item)">
                             </td>
                             <td>
-                                <input class="form-control" type="number" name="amount" readonly v-model="item.amount">
+                                <input class="form-control form-control-sm" type="number" name="amount" readonly v-model="item.amount">
                             </td>
                             <td>
                                 <button class="btn btn-danger btn-sm" @click="removeItem(index)" type="button" title="Retirer l'élément"
