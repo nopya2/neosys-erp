@@ -43,11 +43,16 @@ class CustomerController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function create()
+    public function create(Request $request)
     {
+        $action = '';
+        if($request->has('action'))
+            $action = $request->action;
+
         return view('admin.customers.create', [
             'page' => 'customer',
-            'sub_page' => 'customer.create'
+            'sub_page' => 'customer.create',
+            'action' => $action
         ]);
     }
 
@@ -85,6 +90,9 @@ class CustomerController extends Controller
             'website' => $data['website'],
             'bp' => $data['bp']
         ]);
+
+        if($request->has('action'))
+            return new CustomerResource($customer);
 
         return redirect('customers')->with('success', 'Votre client a été créé!');
     }

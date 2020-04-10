@@ -10,7 +10,7 @@
             </div>
             <div class="col-md-6">
                 <div class="position-relative form-group">
-                    <label for="customer" class="">Client <i class="fa fa-plus-circle text-success" style="cursor: pointer"></i></label>
+                    <label for="customer" class="">Client <i class="fa fa-plus-circle text-success" style="cursor: pointer" @click="addCustomer"></i></label>
                     <select class="form-control form-control-sm" name="customer_id" id="customer" v-model="$v.quote.customer_id.$model">
                         <!--<option value="">-&#45;&#45; Selectionnez un client s'il vous plait &#45;&#45;</option>-->
                         <option v-for="customer in customers" v-bind:value="customer.id">{{ customer.company_name}}</option>
@@ -311,6 +311,9 @@
                 this.quote.amount = this.quote.amount_discount + this.quote.amount_taxes
 
 
+            },
+            addCustomer(){
+                window.open('/customer/create?action=quote', 'customer', "height=600,width=600,modal=yes,alwaysRaised=yes");
             }
 
 

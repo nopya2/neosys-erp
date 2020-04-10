@@ -87,6 +87,8 @@ Route::middleware('auth:api')->get('customer/generate-customer-number', 'Custome
 Route::middleware('auth:api')->get('customer/{id}', 'CustomerController@selectCustomer');
 //Delete customer
 Route::middleware('auth:api')->delete('customer/{customer}', 'CustomerController@destroy');
+//Add customer
+Route::middleware('auth:api')->post('customer', 'CustomerController@store');
 
 //List quotes
 Route::middleware('auth:api')->get('quotes', 'QuoteController@index');

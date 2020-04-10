@@ -1387,11 +1387,19 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
+//
+//
+//
+//
+//
+//
 
 
 
 
 /* harmony default export */ __webpack_exports__["default"] = ({
+  props: ['action'],
   data: function data() {
     return {
       customer: {
@@ -1412,7 +1420,8 @@ __webpack_require__.r(__webpack_exports__);
       activities: _data_activities__WEBPACK_IMPORTED_MODULE_4__["activities"],
       spinner: false,
       csrfToken: null,
-      api_token: ''
+      api_token: '',
+      btnLoading: false
     };
   },
   validations: {
@@ -1545,6 +1554,44 @@ __webpack_require__.r(__webpack_exports__);
       }).then(function (res) {
         _this.customer.customer_number = parseInt(res);
       })["catch"](function (error) {});
+    },
+    saveCustomer: function saveCustomer() {
+      var _this2 = this;
+
+      this.btnLoading = true;
+      fetch("/api/customer?api_token=".concat(this.api_token, "&action=").concat(this.action), {
+        method: 'POST',
+        body: JSON.stringify(this.customer),
+        headers: {
+          'content-type': 'application/json'
+        }
+      }).then(function (res) {
+        return res.json();
+      }).then(function (res) {
+        _this2.btnLoading = false;
+
+        _this2.$swal({
+          position: 'top-end',
+          icon: 'success',
+          title: 'Client ajouté!',
+          showConfirmButton: false,
+          timer: 5000,
+          toast: true
+        });
+
+        window.close();
+      })["catch"](function (error) {
+        _this2.btnLoading = false;
+
+        _this2.$swal({
+          position: 'top-end',
+          icon: 'error',
+          title: 'Erreur traitement!',
+          showConfirmButton: false,
+          timer: 5000,
+          toast: true
+        });
+      });
     }
   }
 });
@@ -6227,6 +6274,9 @@ __webpack_require__.r(__webpack_exports__);
         _this3.quote.amount_taxes += _this3.calculateTax(item.value);
       });
       this.quote.amount = this.quote.amount_discount + this.quote.amount_taxes;
+    },
+    addCustomer: function addCustomer() {
+      window.open('/customer/create?action=quote', 'customer', "height=600,width=600,modal=yes,alwaysRaised=yes");
     }
   }
 });
@@ -18599,17 +18649,51 @@ var render = function() {
       ])
     ]),
     _vm._v(" "),
-    _c(
-      "button",
-      {
-        staticClass: "btn btn-success",
-        attrs: { type: "submit", disabled: _vm.$v.customer.$invalid }
-      },
-      [
-        _c("i", { staticClass: "feather icon-check-circle" }),
-        _vm._v("Créer\n    ")
-      ]
-    )
+    _vm.action == ""
+      ? _c(
+          "button",
+          {
+            staticClass: "btn btn-success",
+            attrs: { type: "submit", disabled: _vm.$v.customer.$invalid }
+          },
+          [
+            _c("i", { staticClass: "feather icon-check-circle" }),
+            _vm._v("Créer\n    ")
+          ]
+        )
+      : _vm._e(),
+    _vm._v(" "),
+    _vm.action != "" && !_vm.btnLoading
+      ? _c(
+          "button",
+          {
+            staticClass: "btn btn-success",
+            attrs: { type: "button", disabled: _vm.$v.customer.$invalid },
+            on: { click: _vm.saveCustomer }
+          },
+          [
+            _c("i", { staticClass: "feather icon-check-circle" }),
+            _vm._v("Créer\n    ")
+          ]
+        )
+      : _vm._e(),
+    _vm._v(" "),
+    _vm.btnLoading
+      ? _c(
+          "button",
+          {
+            staticClass: "mt-2 btn btn-primary shadow-2",
+            attrs: { type: "button", disabled: "" }
+          },
+          [
+            _c("span", {
+              staticClass: "spinner-grow spinner-grow-sm",
+              attrs: { role: "status" }
+            }),
+            _vm._v("\n        Traitement en cours...\n    ")
+          ]
+        )
+      : _vm._e()
   ])
 }
 var staticRenderFns = [
@@ -25974,7 +26058,14 @@ var render = function() {
         _vm._v(" "),
         _c("div", { staticClass: "col-md-6" }, [
           _c("div", { staticClass: "position-relative form-group" }, [
-            _vm._m(0),
+            _c("label", { attrs: { for: "customer" } }, [
+              _vm._v("Client "),
+              _c("i", {
+                staticClass: "fa fa-plus-circle text-success",
+                staticStyle: { cursor: "pointer" },
+                on: { click: _vm.addCustomer }
+              })
+            ]),
             _vm._v(" "),
             _c(
               "select",
@@ -26071,7 +26162,7 @@ var render = function() {
         _c("div", { staticClass: "col-md-12" }, [
           _c("div", { staticClass: "table-responsive" }, [
             _c("table", { staticClass: "table" }, [
-              _vm._m(1),
+              _vm._m(0),
               _vm._v(" "),
               _c(
                 "tbody",
@@ -26522,18 +26613,6 @@ var render = function() {
   )
 }
 var staticRenderFns = [
-  function() {
-    var _vm = this
-    var _h = _vm.$createElement
-    var _c = _vm._self._c || _h
-    return _c("label", { attrs: { for: "customer" } }, [
-      _vm._v("Client "),
-      _c("i", {
-        staticClass: "fa fa-plus-circle text-success",
-        staticStyle: { cursor: "pointer" }
-      })
-    ])
-  },
   function() {
     var _vm = this
     var _h = _vm.$createElement

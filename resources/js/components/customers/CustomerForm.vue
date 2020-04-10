@@ -74,8 +74,15 @@
                 <input type="text" class="form-control" id="website" placeholder="" v-model="$v.customer.website.$model" name="website">
             </div>
         </div>
-        <button type="submit" class="btn btn-success" :disabled="$v.customer.$invalid">
+        <button type="submit" class="btn btn-success" :disabled="$v.customer.$invalid" v-if="action == ''">
             <i class="feather icon-check-circle"></i>Créer
+        </button>
+        <button type="button" class="btn btn-success" :disabled="$v.customer.$invalid" v-if="action != '' && !btnLoading" @click="saveCustomer">
+            <i class="feather icon-check-circle"></i>Créer
+        </button>
+        <button class="mt-2 btn btn-primary shadow-2" type="button" disabled="" v-if="btnLoading">
+            <span class="spinner-grow spinner-grow-sm" role="status"></span>
+            Traitement en cours...
         </button>
     </form>
 
@@ -88,7 +95,7 @@
     import { activities } from '../data/activities'
 
     export default {
-
+        props : ['action'],
         data(){
             return{
                 customer: {
@@ -109,7 +116,8 @@
                 activities: activities,
                 spinner: false,
                 csrfToken: null,
-                api_token: ''
+                api_token: '',
+                btnLoading: false,
 
             }
         },
@@ -187,6 +195,41 @@
 
                     });
             },
+            saveCustomer(){
+                this.btnLoading = true
+                fetch(`/api/customer?api_token=${this.api_token}&action=${this.action}`, {
+                    method: 'POST',
+                    body: JSON.stringify(this.customer),
+                    headers: {
+                        'content-type': 'application/json'
+                    }
+                })
+                    .then(res => res.json())
+                    .then(res => {
+                        this.btnLoading = false
+                        this.$swal({
+                            position: 'top-end',
+                            icon: 'success',
+                            title: 'Client ajouté!',
+                            showConfirmButton: false,
+                            timer: 5000,
+                            toast: true
+                        })
+
+                        window.close();
+                    })
+                    .catch(error => {
+                        this.btnLoading = false
+                        this.$swal({
+                            position: 'top-end',
+                            icon: 'error',
+                            title: 'Erreur traitement!',
+                            showConfirmButton: false,
+                            timer: 5000,
+                            toast: true
+                        })
+                    });
+            }
         }
 
     }

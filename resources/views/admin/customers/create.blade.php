@@ -34,7 +34,7 @@
             <div class="col-lg-12 col-md-12">
                 <div class="main-card mb-3 card">
                     <div class="card-body">
-                        <customer-form></customer-form>
+                        <customer-form :action="'{{$action}}'"></customer-form>
                     </div>
                 </div>
             </div>
