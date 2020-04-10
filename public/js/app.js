@@ -6114,6 +6114,13 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
+//
+//
+//
+//
+//
+//
 
 /* harmony default export */ __webpack_exports__["default"] = ({
   props: ['customers', 'quote_number', 'taxes'],
@@ -26009,6 +26016,24 @@ var render = function() {
     "form",
     {},
     [
+      _c("div", { staticClass: "row" }, [
+        _c("div", { staticClass: "col-md-12" }, [
+          _c(
+            "button",
+            {
+              staticClass:
+                "border-0 btn-transition btn btn-outline-primary btn-sm float-right",
+              attrs: { type: "button" },
+              on: { click: _vm.refreshData }
+            },
+            [
+              _c("i", { staticClass: "fa fa-refresh pe-7s-refresh-2" }),
+              _vm._v(" Rafraichir\n            ")
+            ]
+          )
+        ])
+      ]),
+      _vm._v(" "),
       _c("div", { staticClass: "form-row" }, [
         _c("div", { staticClass: "col-md-6" }, [
           _c("div", { staticClass: "position-relative form-group" }, [

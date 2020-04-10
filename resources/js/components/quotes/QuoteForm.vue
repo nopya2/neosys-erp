@@ -1,5 +1,12 @@
 <template>
     <form class="">
+        <div class="row">
+            <div class="col-md-12">
+                <button type="button" class="border-0 btn-transition btn btn-outline-primary btn-sm float-right" @click="refreshData">
+                    <i class="fa fa-refresh pe-7s-refresh-2"></i> Rafraichir
+                </button>
+            </div>
+        </div>
         <div class="form-row">
             <div class="col-md-6">
                 <div class="position-relative form-group">
