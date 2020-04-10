@@ -75,6 +75,8 @@ Route::middleware('auth:api')->get('provider/echelons', 'ProviderController@load
 
 //List customers
 Route::middleware('auth:api')->get('customers', 'CustomerController@index');
+//Select 20 csutomers
+Route::middleware('auth:api')->get('customers/select', 'CustomerController@select');
 //Select customers by user role
 Route::middleware('auth:api')->get('customers/customers-by-user-role', 'CustomerController@selectCustomersByRole');
 //Check if company name exists

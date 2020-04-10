@@ -24,7 +24,7 @@
     {{--<link rel="stylesheet" type="text/css" href="{{ asset('library/DataTables/datatables.css') }}">--}}
     <link rel="stylesheet" type="text/css" href="{{ asset('library/select2-4.0.13/dist/css/select2.min.css') }}">
     <link href="{{ asset('theme/architectui-html-free/main.css') }}" rel="stylesheet">
-    <link href="{{ asset('css/customs.css') }}" rel="stylesheet" type="text/css">
+    <link href="{{ asset('css/custom.css') }}" rel="stylesheet" type="text/css">
 </head>
 <body>
 <div class="app-container app-theme-white body-tabs-shadow fixed-sidebar fixed-header" id="app">

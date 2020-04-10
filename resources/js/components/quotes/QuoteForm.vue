@@ -1,12 +1,5 @@
 <template>
     <form class="">
-        <div class="row">
-            <div class="col-md-12">
-                <button type="button" class="border-0 btn-transition btn btn-outline-primary btn-sm float-right">
-                    <i class="fa fa-refresh pe-7s-refresh-2"></i> Rafraichir
-                </button>
-            </div>
-        </div>
         <div class="form-row">
             <div class="col-md-6">
                 <div class="position-relative form-group">
@@ -17,13 +10,23 @@
             </div>
             <div class="col-md-6">
                 <div class="position-relative form-group">
-                    <label for="customer" class="">Client <i class="fa fa-plus-circle text-success" style="cursor: pointer" @click="addCustomer"></i></label>
-                    <select class="form-control form-control-sm" name="customer_id" id="customer" v-model="$v.quote.customer_id.$model">
-                        <!--<option value="">-&#45;&#45; Selectionnez un client s'il vous plait &#45;&#45;</option>-->
-                        <option v-for="customer in customers" v-bind:value="customer.id">{{ customer.company_name}}</option>
-                    </select>
-                    <vue-select class="form-control form-control-sm" name="select1" :options="customers" :model.sync="$v.quote.customer_id.$model">
-                    </vue-select>
+                    <label>Client <i class="fa fa-plus-circle text-success" style="cursor: pointer" @click="addCustomer"></i></label>
+                    <v-select :options="customers" label="company_name" index="id" :filterable="false" @search="onSearch" v-model="$v.quote.customer_id.$model"
+                        :reduce="company_name => company_name.id">
+                        <template slot="no-options">
+                            Aucun client trouvé
+                        </template>
+                        <template slot="option" slot-scope="option">
+                            <div class="d-center">
+                                {{ option.company_name }}
+                            </div>
+                        </template>
+                        <template slot="selected-option" slot-scope="option">
+                            <div class="selected d-center">
+                                {{ option.company_name }}
+                            </div>
+                        </template>
+                    </v-select>
                     <small class="form-text text-danger" v-if="!$v.quote.customer_id.required">Champs requis.</small>
                 </div>
             </div>
@@ -165,16 +168,13 @@
     import { required } from 'vuelidate/lib/validators'
 
     export default {
-        components: {
-            "vue-select": require("vue-select2/src/vue-select.js")
-        },
-        props : ['customers', 'quote_number', 'taxes'],
+        props : ['quote_number', 'taxes'],
         data(){
             return{
                 quote: {
                     quote_number: '',
                     title: '',
-                    customer_id: 1,
+                    customer_id: null,
                     items: [],
                     taxes: [],
                     amount_et: 0,
@@ -184,6 +184,7 @@
                     amount_taxes: 0,
                     selected_taxes: []
                 },
+                customers: [],
                 spinner: false,
                 csrfToken: null,
                 api_token: '',
@@ -207,7 +208,6 @@
             }
         },
         mounted() {
-            $("#customer").select2({placeholder:"Sélectionnez un client"})
         },
         created(){
             if (window.localStorage.getItem('authUser')) {
@@ -326,9 +326,23 @@
             },
             addCustomer(){
                 window.open('/customer/create?action=quote', 'customer', "height=600,width=600,modal=yes,alwaysRaised=yes");
+            },
+            onSearch(search, loading) {
+                loading(true);
+                this.search(loading, search, this);
+            },
+            search(loading, search, vm){
+                fetch(`/api/customers/select?api_token=${this.api_token}&search=${search}`)
+                    .then(res => res.json())
+                    .then(res => {
+                        loading(false);
+                        vm.customers = res.data
+                    })
+                    .catch(error => {
+                        loading(false);
+                        console.log(error)
+                    });
             }
-
-
         }
 
     }

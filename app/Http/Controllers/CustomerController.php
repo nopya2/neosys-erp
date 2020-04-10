@@ -38,6 +38,15 @@ class CustomerController extends Controller
         return new JsonResponse($customers);
     }
 
+    public function select(Request $request)
+    {
+        $customers = Customer::where('company_name', 'LIKE', '%'.$request->search.'%')
+            ->orderBy('company_name', 'asc')
+            ->paginate(20);
+
+        return CustomerResource::collection($customers);
+    }
+
     /**
      * Show the form for creating a new resource.
      *

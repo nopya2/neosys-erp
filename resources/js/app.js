@@ -16,6 +16,7 @@ import VModal from 'vue-js-modal'
 import VueSweetalert2 from 'vue-sweetalert2';
 import 'sweetalert2/dist/sweetalert2.min.css';
 import CKEditor from '@ckeditor/ckeditor5-vue';
+import vSelect from 'vue-select';
 
 Vue.use(Vuelidate);
 Vue.use(VueContext);
@@ -50,6 +51,9 @@ Vue.component('login-component', require('./components/LoginComponent.vue').defa
 Vue.component('information-component', require('./components/InformationComponent.vue').default);
 Vue.component('vue-context', require('vue-context').default);
 Vue.component('swatches', require('vue-swatches').default);
+Vue.component('v-select', vSelect);
+
+import 'vue-select/dist/vue-select.css';
 
 function updateFunction (el, binding) {
     // get options from binding value.
