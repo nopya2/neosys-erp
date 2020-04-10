@@ -2,7 +2,7 @@
     <form class="">
         <div class="row">
             <div class="col-md-12">
-                <button type="button" class="border-0 btn-transition btn btn-outline-primary btn-sm float-right" @click="refreshData">
+                <button type="button" class="border-0 btn-transition btn btn-outline-primary btn-sm float-right">
                     <i class="fa fa-refresh pe-7s-refresh-2"></i> Rafraichir
                 </button>
             </div>
@@ -22,6 +22,8 @@
                         <!--<option value="">-&#45;&#45; Selectionnez un client s'il vous plait &#45;&#45;</option>-->
                         <option v-for="customer in customers" v-bind:value="customer.id">{{ customer.company_name}}</option>
                     </select>
+                    <vue-select class="form-control form-control-sm" name="select1" :options="customers" :model.sync="$v.quote.customer_id.$model">
+                    </vue-select>
                     <small class="form-text text-danger" v-if="!$v.quote.customer_id.required">Champs requis.</small>
                 </div>
             </div>
@@ -163,6 +165,9 @@
     import { required } from 'vuelidate/lib/validators'
 
     export default {
+        components: {
+            "vue-select": require("vue-select2/src/vue-select.js")
+        },
         props : ['customers', 'quote_number', 'taxes'],
         data(){
             return{
