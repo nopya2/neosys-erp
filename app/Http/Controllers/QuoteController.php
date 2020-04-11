@@ -11,6 +11,8 @@ use App\Http\Resources\Quote as QuoteResource;
 use App\Customer;
 use App\Providers\Functions;
 use App\Tax;
+use Exception;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
@@ -88,14 +90,11 @@ class QuoteController extends Controller
             ->orderBy('name', 'asc')
             ->get();
 
-        $quoteNumber = Functions::generateQuoteNumber();
-
         return view('admin.quotes.create', [
             'page' => 'quote',
             'sub_page' => 'quote.list',
             'customers' => $customers,
             'taxes' => $taxes,
-            'quote_number' => $quoteNumber
         ]);
     }
 
@@ -105,7 +104,6 @@ class QuoteController extends Controller
         $currentUser = Auth::user();
 
         $data = $request->validate([
-            'quote_number' => ['required'],
             'title' => ['required'],
             'customer_id' => ['required'],
             'amount_et' => ['required'],
@@ -118,40 +116,44 @@ class QuoteController extends Controller
         $currentDate = new \DateTime();
         $expireAt = $currentDate->add(new \DateInterval('P30D'));
 
-        //On cree d'abord le devis
-        $quote = Quote::forceCreate([
-            'customer_id' => $data['customer_id'],
-            'user_id' => $currentUser->id,
-            'quote_number' => $data['quote_number'],
-            'title' => $data['title'],
-            'amount_et' => $data['amount_et'],
-            'discount' => $data['discount'],
-            'amount_discount' => $data['amount_discount'],
-            'amount_taxes' => $data['amount_taxes'],
-            'amount' => $data['amount'],
-            'created_at' => new \DateTime(),
-            'updated_at' => new \DateTime(),
-            'expire_at' => $expireAt,
-            'expired' => false,
-        ]);
-
-        //On cree les items du devis et on attache au devis
-        $items = $request->items;
-        foreach ($items as $el){
-            $item = Item::forceCreate([
-                'label' => $el['label'],
-                'pu' => doubleval($el['pu']),
-                'qty' => intval($el['qty']),
-                'amount' => doubleval($el['amount']),
+        try {
+            //On cree d'abord le devis
+            $quote = Quote::forceCreate([
+                'customer_id' => $data['customer_id'],
+                'user_id' => $currentUser->id,
+                'quote_number' => Functions::generateQuoteNumber(),
+                'title' => $data['title'],
+                'amount_et' => $data['amount_et'],
+                'discount' => $data['discount'],
+                'amount_discount' => $data['amount_discount'],
+                'amount_taxes' => $data['amount_taxes'],
+                'amount' => $data['amount'],
+                'created_at' => new \DateTime(),
+                'updated_at' => new \DateTime(),
+                'expire_at' => $expireAt,
+                'expired' => false,
             ]);
 
-            $quote->items()->attach($item->id);
-        }
+            //On cree les items du devis et on attache au devis
+            $items = $request->items;
+            foreach ($items as $el){
+                $item = Item::forceCreate([
+                    'label' => $el['label'],
+                    'pu' => doubleval($el['pu']),
+                    'qty' => intval($el['qty']),
+                    'amount' => doubleval($el['amount']),
+                ]);
 
-        //On affecte les taxes au devis
-        $taxes = $request->selected_taxes;
-        foreach ($taxes as $el){
-            $quote->taxes()->attach($el['id']);
+                $quote->items()->attach($item->id);
+            }
+
+            //On affecte les taxes au devis
+            $taxes = $request->selected_taxes;
+            foreach ($taxes as $el){
+                $quote->taxes()->attach($el['id']);
+            }
+        }catch (Exception $e){
+            return new JsonResponse($e, 400);
         }
 
         return new QuoteResource($quote);

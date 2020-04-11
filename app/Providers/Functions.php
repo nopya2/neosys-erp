@@ -38,11 +38,11 @@ class Functions{
         $tempChar = strval($temp);
 
         if($lastQuote){
-            $temp = 1000000 + intval($lastQuote->quote_number) + 1;
+            $temp = 1000000 + intval(substr($lastQuote->quote_number, 1, 6)) + 1;
             $tempChar = strval($temp);
         }
 
-        return $tempChar[1].$tempChar[2].$tempChar[3].$tempChar[4].$tempChar[5].$tempChar[6];
+        return 'Q'.substr($tempChar, 1, 6);
     }
 
     public static function generateInvoiceNumber(){

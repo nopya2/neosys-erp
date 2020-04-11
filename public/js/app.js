@@ -6117,22 +6117,12 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
-//
-//
-//
-//
-//
-//
-//
-//
-//
 
 /* harmony default export */ __webpack_exports__["default"] = ({
-  props: ['quote_number', 'taxes'],
+  props: ['taxes'],
   data: function data() {
     return {
       quote: {
-        quote_number: '',
         title: '',
         customer_id: null,
         items: [],
@@ -6154,9 +6144,6 @@ __webpack_require__.r(__webpack_exports__);
   },
   validations: {
     quote: {
-      quote_number: {
-        required: vuelidate_lib_validators__WEBPACK_IMPORTED_MODULE_0__["required"]
-      },
       customer_id: {
         required: vuelidate_lib_validators__WEBPACK_IMPORTED_MODULE_0__["required"]
       },
@@ -6173,7 +6160,6 @@ __webpack_require__.r(__webpack_exports__);
     }
 
     this.csrfToken = document.querySelector('meta[name="csrf-token"]').content;
-    this.quote.quote_number = this.quote_number;
     this.addItem();
     this.initTaxes();
   },
@@ -6201,22 +6187,37 @@ __webpack_require__.r(__webpack_exports__);
         headers: {
           'content-type': 'application/json'
         }
-      }).then(function (res) {
-        return res.json();
-      }).then(function (res) {
+      }) // .then(res => res.json())
+      .then(function (res) {
         _this.btnLoading = false;
 
-        _this.$swal({
-          position: 'top-end',
-          icon: 'success',
-          title: 'Devis enregistré!',
-          showConfirmButton: false,
-          timer: 5000,
-          toast: true
-        });
+        if (res.ok) {
+          res.json().then(function (result) {
+            _this.$swal({
+              position: 'top-end',
+              icon: 'success',
+              title: 'Devis enregistré!',
+              showConfirmButton: false,
+              timer: 5000,
+              toast: true
+            });
 
-        window.location = "/quote/".concat(res.data.id, "/edit");
+            window.location = "/quote/".concat(result.data.id, "/edit");
+          });
+        } else {
+          res.json().then(function (error) {
+            _this.$swal({
+              position: 'top-end',
+              icon: 'error',
+              title: error.errorInfo[2],
+              showConfirmButton: false,
+              timer: 5000,
+              toast: true
+            });
+          });
+        }
       })["catch"](function (error) {
+        console.log(error);
         _this.btnLoading = false;
 
         _this.$swal({
@@ -26054,52 +26055,6 @@ var render = function() {
     [
       _c("div", { staticClass: "form-row" }, [
         _c("div", { staticClass: "col-md-6" }, [
-          _c("div", { staticClass: "position-relative form-group" }, [
-            _c("label", { attrs: { for: "quote_number" } }, [
-              _vm._v("Numéro de devis")
-            ]),
-            _vm._v(" "),
-            _c("input", {
-              directives: [
-                {
-                  name: "model",
-                  rawName: "v-model",
-                  value: _vm.$v.quote.quote_number.$model,
-                  expression: "$v.quote.quote_number.$model"
-                }
-              ],
-              staticClass: "form-control form-control-sm",
-              attrs: {
-                name: "quote_number",
-                id: "quote_number",
-                placeholder: "",
-                type: "text",
-                readonly: ""
-              },
-              domProps: { value: _vm.$v.quote.quote_number.$model },
-              on: {
-                input: function($event) {
-                  if ($event.target.composing) {
-                    return
-                  }
-                  _vm.$set(
-                    _vm.$v.quote.quote_number,
-                    "$model",
-                    $event.target.value
-                  )
-                }
-              }
-            }),
-            _vm._v(" "),
-            !_vm.$v.quote.quote_number.required
-              ? _c("small", { staticClass: "form-text text-danger" }, [
-                  _vm._v("Champs requis.")
-                ])
-              : _vm._e()
-          ])
-        ]),
-        _vm._v(" "),
-        _c("div", { staticClass: "col-md-6" }, [
           _c(
             "div",
             { staticClass: "position-relative form-group" },
@@ -26182,10 +26137,8 @@ var render = function() {
             ],
             1
           )
-        ])
-      ]),
-      _vm._v(" "),
-      _c("div", { staticClass: "form-row" }, [
+        ]),
+        _vm._v(" "),
         _c("div", { staticClass: "col-md-6" }, [
           _c("div", { staticClass: "position-relative form-group" }, [
             _c("label", { attrs: { for: "title" } }, [

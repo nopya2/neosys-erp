@@ -44,7 +44,7 @@
             <div class="col-lg-12 col-md-12">
                 <div class="main-card mb-3 card">
                     <div class="card-body">
-                        <quote-form :quote_number="'{{ $quote_number }}'" :taxes="{{ $taxes }}"></quote-form>
+                        <quote-form :taxes="{{ $taxes }}"></quote-form>
                     </div>
                 </div>
             </div>

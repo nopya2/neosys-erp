@@ -3,13 +3,6 @@
         <div class="form-row">
             <div class="col-md-6">
                 <div class="position-relative form-group">
-                    <label for="quote_number" class="">Numéro de devis</label>
-                    <input name="quote_number" id="quote_number" placeholder="" type="text" class="form-control form-control-sm" v-model="$v.quote.quote_number.$model" readonly>
-                    <small class="form-text text-danger" v-if="!$v.quote.quote_number.required">Champs requis.</small>
-                </div>
-            </div>
-            <div class="col-md-6">
-                <div class="position-relative form-group">
                     <label>Client <i class="fa fa-plus-circle text-success" style="cursor: pointer" @click="addCustomer"></i></label>
                     <v-select :options="customers" label="company_name" index="id" :filterable="false" @search="onSearch" v-model="$v.quote.customer_id.$model"
                         :reduce="company_name => company_name.id">
@@ -30,8 +23,6 @@
                     <small class="form-text text-danger" v-if="!$v.quote.customer_id.required">Champs requis.</small>
                 </div>
             </div>
-        </div>
-        <div class="form-row">
             <div class="col-md-6">
                 <div class="position-relative form-group">
                     <label for="title" class="">Titre du devis</label>
@@ -168,11 +159,10 @@
     import { required } from 'vuelidate/lib/validators'
 
     export default {
-        props : ['quote_number', 'taxes'],
+        props : ['taxes'],
         data(){
             return{
                 quote: {
-                    quote_number: '',
                     title: '',
                     customer_id: null,
                     items: [],
@@ -195,9 +185,6 @@
         },
         validations: {
             quote: {
-                quote_number: {
-                    required
-                },
                 customer_id: {
                     required
                 },
@@ -216,8 +203,6 @@
             }
 
             this.csrfToken = document.querySelector('meta[name="csrf-token"]').content
-
-            this.quote.quote_number = this.quote_number
             this.addItem()
             this.initTaxes()
         },
@@ -245,21 +230,40 @@
                         'content-type': 'application/json'
                     }
                 })
-                    .then(res => res.json())
+                    // .then(res => res.json())
                     .then(res => {
                         this.btnLoading = false
-                        this.$swal({
-                            position: 'top-end',
-                            icon: 'success',
-                            title: 'Devis enregistré!',
-                            showConfirmButton: false,
-                            timer: 5000,
-                            toast: true
-                        })
+                        if (res.ok){
+                            res.json().then(result =>{
+                                this.$swal({
+                                    position: 'top-end',
+                                    icon: 'success',
+                                    title: 'Devis enregistré!',
+                                    showConfirmButton: false,
+                                    timer: 5000,
+                                    toast: true
+                                })
 
-                        window.location = `/quote/${res.data.id}/edit`
+                                window.location = `/quote/${result.data.id}/edit`
+                            })
+
+                        }else{
+                            res.json().then(error =>{
+                                this.$swal({
+                                    position: 'top-end',
+                                    icon: 'error',
+                                    title: error.errorInfo[2],
+                                    showConfirmButton: false,
+                                    timer: 5000,
+                                    toast: true
+                                })
+                            })
+
+                        }
+
                     })
                     .catch(error => {
+                        console.log(error);
                         this.btnLoading = false
                         this.$swal({
                             position: 'top-end',
