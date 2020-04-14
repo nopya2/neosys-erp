@@ -50,7 +50,9 @@
                                     <td>{{ customer.email }}</td>
                                     <td>{{ customer.phonenumber }}</td>
                                     <td>{{ customer.activity }}</td>
-                                    <td>{{ customer.manager }}</td>
+                                    <td>
+                                        <span v-if="customer.manager">{{ customer.manager.name }}</span>
+                                    </td>
                                     <td class="text-center">
                                         <a :href="'customer/'+customer.id+'/edit'">
                                             <button class="btn btn-warning btn-icon btn-sm" title="Modifier">
@@ -143,7 +145,7 @@
                     .then(res => {
                         this.spinner = false
                         this.customers = res.data
-                        vm.makePagination(res.current_page, res.last_page, res.next_page_url, res.prev_page_url, res.total)
+                        vm.makePagination(res.meta, res.links)
                     })
                     .catch(error => {
                         console.log(error)
@@ -158,13 +160,13 @@
                         })
                     });
             },
-            makePagination(current_page, last_page, next_page_url, prev_page_url, total){
+            makePagination(meta, links){
                 let pagination = {
-                    current_page: current_page,
-                    last_page: last_page,
-                    next_page_url: next_page_url,
-                    prev_page_url: prev_page_url,
-                    total: total
+                    current_page: meta.current_page,
+                    last_page: meta.last_page,
+                    next_page_url: links.next,
+                    prev_page_url: links.prev,
+                    total: meta.total
                 }
 
                 this.pagination = pagination;

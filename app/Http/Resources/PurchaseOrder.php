@@ -5,7 +5,7 @@ namespace App\Http\Resources;
 use App\Http\Resources\Customer as CustomerResource;
 use Illuminate\Http\Resources\Json\JsonResource;
 
-class Quote extends JsonResource
+class PurchaseOrder extends JsonResource
 {
     /**
      * Transform the resource into an array.
@@ -19,7 +19,7 @@ class Quote extends JsonResource
             'id' => $this->id,
             'customer_id' => $this->customer_id,
             'user_id' => $this->user_id,
-            'quote_number' => $this->quote_number,
+            'purchase_order_number' => $this->purchase_order_number,
             'title' => $this->title,
             'amount_et' => $this->amount_et,
             'discount' => $this->discount,
@@ -28,15 +28,11 @@ class Quote extends JsonResource
             'amount' => $this->amount,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
+            'expire_at' => $this->expire_at,
+            'status' => $this->status,
             'customer' => new CustomerResource($this->customer),
             'user' => $this->user,
-            'expire_at' => $this->expire_at,
-            'expired' => $this->expired,
-            'taxes' => $this->taxes,
-            'items' => $this->items,
-            'deadline' => $this->deadline,
-            'is_billed' => $this->is_billed,
-            'status' => $this->status
+            'items' => $this->items
 
         ];
     }

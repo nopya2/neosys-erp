@@ -15,19 +15,29 @@ class CreatePurchaseOrdersTable extends Migration
     {
         Schema::create('purchase_orders', function (Blueprint $table) {
             $table->bigIncrements('id');
-            $table->unsignedBigInteger('quote_id');
             $table->unsignedBigInteger('user_id')->nullable();
-            $table->timestamps();
+            $table->unsignedBigInteger('customer_id');
+            $table->string('purchase_order_number')->unique();
+            $table->string('title');
+            $table->double('amount_et')->nullable();
+            $table->double('discount')->nullable();
+            $table->double('amount_discount')->nullable();
+            $table->double('amount')->nullable();
+            $table->double('amount_taxes')->nullable();
+            $table->date('expire_at')->nullable();
+            $table->string('status')->default('draft');
 
-            $table->index('quote_id');
-            $table->foreign('quote_id')->references('id')->on('quotes')
-                ->onDelete('cascade')
-                ->onUpdate('cascade');
 
             $table->index('user_id');
             $table->foreign('user_id')->references('id')->on('users')
                 ->onDelete('set null')
                 ->onUpdate('cascade');
+
+            $table->index('customer_id');
+            $table->foreign('customer_id')->references('id')->on('customers')
+                ->onDelete('cascade')
+                ->onUpdate('cascade');
+            $table->timestamps();
         });
     }
 

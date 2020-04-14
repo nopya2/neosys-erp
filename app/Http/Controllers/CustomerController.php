@@ -27,15 +27,20 @@ class CustomerController extends Controller
      */
     public function index(Request $request)
     {
-        $customers = DB::table('customers')
-            ->join('users', 'customers.manager_id', '=', 'users.id')
-            ->select('customers.*', 'users.name as manager')
-            ->where('company_name', 'LIKE', '%' . $request->keyword . '%')
+//        $customers = DB::table('customers')
+//            ->join('users', 'customers.manager_id', '=', 'users.id')
+//            ->select('customers.*', 'users.name as manager')
+//            ->where('company_name', 'LIKE', '%' . $request->keyword . '%')
+//            ->orderBy('company_name', 'asc')
+//            ->paginate(10);
+
+        $customers = Customer::where('company_name', 'LIKE', '%' . $request->keyword . '%')
             ->orderBy('company_name', 'asc')
             ->paginate(10);
 
 
-        return new JsonResponse($customers);
+//        return new JsonResponse($customers);
+        return CustomerResource::collection($customers);
     }
 
     public function select(Request $request)

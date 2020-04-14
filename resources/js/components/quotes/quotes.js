@@ -14,3 +14,8 @@ Vue.component(
     require('./QuoteFormEdit.vue').default
 );
 
+Vue.component(
+    'quote-form-duplicate',
+    require('./QuoteFormDuplicate.vue').default
+);
+

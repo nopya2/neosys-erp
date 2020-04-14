@@ -16,11 +16,20 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\View;
 use PDF;
 use NumberToWords\NumberToWords;
 
 class QuoteController extends Controller
 {
+    protected $app_information;
+
+    public function __construct()
+    {
+        $this->app_information = Information::find(1);
+        View::share('app_information', $this->app_information);
+    }
+
     public function home()
     {
         return view('admin.quotes.index', [
@@ -36,40 +45,18 @@ class QuoteController extends Controller
      */
     public function index(Request $request)
     {
-        $quotes = Quote::where('quote_number', 'LIKE', '%' . $request->keyword . '%')
-            ->orWhere(function ($query) use ($request){
+        $quotes = Quote::where('status', 'LIKE', '%'.$request->status.'%')
+            ->where(function ($query) use ($request){
                 $query
                     ->whereHas('customer', function ($query) use ($request){
                         $query
                             ->where('company_name', 'LIKE', '%' . $request->keyword . '%');
                     })
-                    ->orWhere('title', 'LIKE', '%' . $request->keyword . '%');
+                    ->orWhere('title', 'LIKE', '%' . $request->keyword . '%')
+                    ->orWhere('quote_number', 'LIKE', '%' . $request->keyword . '%');
             })
             ->orderBy('id', 'desc')
             ->get();
-
-        if($request->status !== '0'){
-            switch($request->status){
-                case '1':
-                    //Devis expire
-                    $quotes = $quotes->filter(function ($quote) {
-                        return $quote->expired == true;
-                    });
-                    break;
-                case '2':
-                    //Devis en cours
-                    $quotes = $quotes->filter(function ($quote) {
-                        return $quote->expired != true & $quote->is_billed != true;
-                    });
-                    break;
-                case '3':
-                    //Devis facture
-                    $quotes = $quotes->filter(function ($quote) {
-                        return $quote->is_billed == true;
-                    });
-                    break;
-            }
-        }
 
 
         return QuoteResource::collection($quotes)->paginate(10);
@@ -101,6 +88,7 @@ class QuoteController extends Controller
 
     public function store(Request $request)
     {
+        $information = Information::find(1);
         $currentUser = Auth::user();
 
         $data = $request->validate([
@@ -114,7 +102,7 @@ class QuoteController extends Controller
         ]);
 
         $currentDate = new \DateTime();
-        $expireAt = $currentDate->add(new \DateInterval('P30D'));
+        $expireAt = $currentDate->add(new \DateInterval('P'.$information->quote_delay.'D'));
 
         try {
             //On cree d'abord le devis
@@ -205,6 +193,9 @@ class QuoteController extends Controller
     public function update(Request $request)
     {
         $quote = Quote::findOrFail($request->id);
+        if($quote->status === 'billed'){
+            return new JsonResponse(['message'=>'Action non permise'], 400);
+        }
 
         $data = $request->validate([
             'quote_number' => ['required'],
@@ -226,11 +217,9 @@ class QuoteController extends Controller
         $quote->amount_taxes = $request->amount_taxes;
         $quote->amount = $request->amount;
         $quote->updated_at = $currentDate;
-
-        if($request->action === 'reedit'){
-            $expireAt = $currentDate->add(new \DateInterval('P30D'));
-            $quote->expire_at = $expireAt;
-        }
+        $expireAt = $currentDate->add(new \DateInterval('P'.$this->app_information->quote_delay.'D'));
+        $quote->expire_at = $expireAt;
+        $quote->status = 'in_progress';
 
         $quote->save();
 
@@ -275,6 +264,21 @@ class QuoteController extends Controller
         return new QuoteResource($quote);
     }
 
+    public function duplicateQuote($quote, Request $request){
+        $oldQuote = Quote::find($quote);
+
+        $taxes = Tax::where('name', 'LIKE', '%%')
+            ->orderBy('name', 'asc')
+            ->get();
+
+        return view('admin.quotes.duplicate', [
+            'quote' => $oldQuote,
+            'page' => 'quote',
+            'sub_page' => 'quote.list',
+            'taxes' => $taxes,
+        ]);
+    }
+
     public function printQuote($quote){
         $information = Information::find(1);
         $quote = Quote::findOrFail($quote);
@@ -287,13 +291,16 @@ class QuoteController extends Controller
             'information' => $information
         ]);
 
-        return $pdf->stream('NST-Q'.$quote->quote_number.'.pdf');
+        return $pdf->stream('NST-'.$quote->quote_number.'.pdf');
 
 //        return $pdf->download($quote->quote_number.'.pdf');
     }
 
     public function billQuote($quote, Request $request){
         $quote = Quote::find($quote);
+        if($quote->status === 'billed'){
+            return new JsonResponse(['message'=>'Action non permise'], 400);
+        }
 
         $currentUser = Auth::user();
 
@@ -336,57 +343,10 @@ class QuoteController extends Controller
             $invoice->taxes()->attach($el['id']);
         }
 
-        $quote->is_billed = true;
+        $quote->status = 'billed';
         $quote->save();
 
         return redirect()->route('invoice.edit', ['invoice' => $invoice->id, 'action' => 'bill']);
-    }
-
-    public function duplicateQuote($quote, Request $request){
-        $oldQuote = Quote::find($quote);
-
-        $currentUser = Auth::user();
-
-        $currentDate = new \DateTime();
-
-        //On cree d'abord le devis
-        $quote = Quote::forceCreate([
-            'customer_id' => $oldQuote->customer_id,
-            'user_id' => $currentUser->id,
-            'quote_number' => Functions::generateQuoteNumber(),
-            'title' => $oldQuote->title,
-            'amount_et' => $oldQuote->amount_et,
-            'discount' => $oldQuote->discount,
-            'amount_discount' => $oldQuote->amount_discount,
-            'amount_taxes' => $oldQuote->amount_taxes,
-            'amount' => $oldQuote->amount,
-            'created_at' => $currentDate->format('Y-m-d'),
-            'updated_at' => $currentDate,
-//            'expire_at' => $expireAt,
-            'expired' => false,
-            'is_billed' => false
-        ]);
-
-        //On cree les items du devis et on attache au devis
-        $items = $oldQuote->items;
-        foreach ($items as $el){
-            $item = Item::forceCreate([
-                'label' => $el['label'],
-                'pu' => doubleval($el['pu']),
-                'qty' => intval($el['qty']),
-                'amount' => doubleval($el['amount']),
-            ]);
-
-            $quote->items()->attach($item->id);
-        }
-
-        //On affecte les taxes au devis
-        $taxes = $oldQuote->taxes;
-        foreach ($taxes as $el){
-            $quote->taxes()->attach($el['id']);
-        }
-
-        return redirect()->route('quote.edit', ['quote' => $quote->id, 'action' => 'duplicate']);
     }
 
     public function sendEmail(Request $request){
@@ -451,6 +411,19 @@ class QuoteController extends Controller
 //        return $pdf->download($quote->quote_number.'.pdf');
     }
 
+    public function updateStatusQuote(Request $request){
+        $quotes = Quote::where('status', 'in_progress')->get();
+        $now = new \DateTime();
+        foreach ($quotes as $quote){
+            if($now > $quote->expire_at){
+                $quote->status = 'canceled';
+                $quote->save();
+            }
+        }
+
+        return 1;
+    }
+
     /**
      * Remove the specified resource from storage.
      *
@@ -460,6 +433,9 @@ class QuoteController extends Controller
     public function destroy($quote)
     {
         $quote = Quote::find($quote);
+        if($quote->status === 'billed'){
+            return new JsonResponse(['message'=>'Action non permise'], 400);
+        }
 
         if($quote->delete()){
             return new QuoteResource($quote);

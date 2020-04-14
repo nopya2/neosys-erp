@@ -5,6 +5,7 @@ namespace App\Providers;
 use App\CreditNote;
 use App\Information;
 use App\Invoice;
+use App\PurchaseOrder;
 use App\Quote;
 
 class Functions{
@@ -42,7 +43,24 @@ class Functions{
             $tempChar = strval($temp);
         }
 
-        return 'Q'.substr($tempChar, 1, 6);
+        return 'D'.substr($tempChar, 1, 6);
+    }
+
+    public static function generatePurchaseOrderNumber(){
+        $last_purchase_order = PurchaseOrder::where('purchase_order_number', 'LIKE', '%%')
+            ->orderBy('purchase_order_number', 'desc')
+            ->first();
+
+
+        $temp = 1000000 + 1;
+        $tempChar = strval($temp);
+
+        if($last_purchase_order){
+            $temp = 1000000 + intval(substr($last_purchase_order->purchase_order_number, 2, 6)) + 1;
+            $tempChar = strval($temp);
+        }
+
+        return 'BC'.substr($tempChar, 2, 6);
     }
 
     public static function generateInvoiceNumber(){

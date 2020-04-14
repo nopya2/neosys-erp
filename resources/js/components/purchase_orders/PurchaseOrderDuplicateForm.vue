@@ -5,7 +5,7 @@
                 <div class="position-relative form-group">
                     <label>Client <i class="fa fa-plus-circle text-success" style="cursor: pointer" @click="addCustomer"></i></label>
                     <v-select :options="customers" label="company_name" index="id" :filterable="false" @search="onSearch" v-model="$v.quote.customer_id.$model"
-                        :reduce="company_name => company_name.id">
+                              :reduce="company_name => company_name.id">
                         <template slot="no-options">
                             Aucun client trouvé
                         </template>
@@ -61,7 +61,7 @@
                             </td>
                             <td>
                                 <button class="btn btn-danger btn-sm" @click="removeItem(index)" type="button" title="Retirer l'élément"
-                                    v-if="quote.items.length > 1">
+                                        v-if="quote.items.length > 1">
                                     <i class="fa fa-times-circle"></i>
                                 </button>
                             </td>
@@ -83,7 +83,7 @@
                                 <div class="row">
                                     <div class="col-md-6">
                                         <input class="form-control" type="number" name="amount" v-model="quote.discount"
-                                           v-on:input="calculateAmount" max="100" min="0">
+                                               v-on:input="calculateAmount" max="100" min="0">
                                     </div>
                                     <div class="col-md-6">
                                         {{ ((quote.amount_et * quote.discount) /100) | numFormat  }}
@@ -119,6 +119,9 @@
                 <button class="mt-2 btn btn-primary shadow-2" type="button" disabled="" v-if="btnLoading">
                     <span class="spinner-grow spinner-grow-sm" role="status"></span>
                     Traitement en cours
+                </button>
+                <button type="button" class="mt-2 btn btn-danger" @click="cancelDuplicate" v-if="!btnLoading">
+                    Annuler
                 </button>
                 <button type="button" class="mt-2 btn btn-secondary" @click="selectTaxes">
                     Sélection des taxes
@@ -160,7 +163,7 @@
     import { Functions } from '../../scripts/functions.js'
 
     export default {
-        props : ['taxes'],
+        props : ['taxes', 'old_quote', 'quote_items', 'quote_taxes'],
         data(){
             return{
                 quote: {
@@ -204,11 +207,25 @@
             }
 
             this.csrfToken = document.querySelector('meta[name="csrf-token"]').content
-            this.addItem()
+            this.initQuote()
             this.initTaxes()
         },
 
         methods: {
+            initQuote(){
+                this.quote = {
+                    title: this.old_quote.title,
+                    customer_id: null,
+                    items: [...this.quote_items],
+                    // taxes: [...this.quote_taxes],
+                    amount_et: this.old_quote.amount_et,
+                    amount_discount: this.old_quote.amount_discount,
+                    amount: this.old_quote.amount,
+                    discount: this.old_quote.discount,
+                    amount_taxes: this.old_quote.amount_taxes,
+                    selected_taxes: [...this.quote_taxes]
+                }
+            },
             addItem(){
                 this.quote.items.push({
                     label: '',
@@ -231,7 +248,7 @@
                         'content-type': 'application/json'
                     }
                 })
-                    // .then(res => res.json())
+                // .then(res => res.json())
                     .then(res => {
                         this.btnLoading = false
                         if (res.ok){
@@ -324,6 +341,9 @@
                         loading(false);
                         console.log(error)
                     });
+            },
+            cancelDuplicate(){
+                window.history.back();
             }
         }
 

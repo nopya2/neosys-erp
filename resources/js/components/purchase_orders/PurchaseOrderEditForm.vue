@@ -11,24 +11,24 @@
                     <button type="button" aria-haspopup="true" aria-expanded="false" data-toggle="dropdown"
                             class="dropdown-toggle btn btn-primary" id="dropdownMenuButton">Actions</button>
                     <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                        <button class="dropdown-item" type="button" @click="billQuote(quote.id)" :disabled="quote.status === 'billed'">
+                        <button class="dropdown-item" type="button" @click="billPurchaseOrder(purchase_order.id)" :disabled="purchase_order.status === 'billed'">
                             <i class="fa fa-file"></i>&nbsp;Facturer
                         </button>
                         <div class="dropdown-divider"></div>
-                        <button class="dropdown-item" type="button" @click="printQuote(quote.id)">
+                        <button class="dropdown-item" type="button" @click="printPurchaseOrder(purchase_order.id)">
                             <i class="fa fa-print"></i>&nbsp;Imprimer
                         </button>
-                        <button type="button" tabindex="0" class="dropdown-item" @click="printPurchaseOrder(quote.id)" :disabled="quote.status === 'billed' || quote.status === 'canceled'">
+                        <button type="button" tabindex="0" class="dropdown-item" @click="printPurchaseOrder(purchase_order.id)" :disabled="purchase_order.status === 'billed' || purchase_order.status === 'canceled'">
                             <i class="fa fa-print"></i>&nbsp;Imprimer bon de commande
                         </button>
                         <button type="button" class="dropdown-item" @click="sendEmail()">
                             <i class="fa fa-envelope"></i>&nbsp;Envoyer
                         </button>
                         <div class="dropdown-divider"></div>
-                        <button type="button" class="dropdown-item" @click="duplicateQuote(quote.id)">
+                        <button type="button" class="dropdown-item" @click="duplicatePurchaseOrder(purchase_order.id)">
                             <i class="fa fa-clone"></i>&nbsp;Dupliquer
                         </button>
-                        <button type="button" class="dropdown-item text-danger" :disabled="quote.status === 'billed'" @click="deleteQuote(quote.id)">
+                        <button type="button" class="dropdown-item text-danger" :disabled="purchase_order.status === 'billed'" @click="deletePurchaseOrder(purchase_order.id)">
                             <i class="fa fa-trash"></i>&nbsp;Supprimer
                         </button>
                     </div>
@@ -36,10 +36,10 @@
             </div>
 
             <div class="col-md-6">
-                <div class="mb-2 mr-2 badge badge-dark float-right" v-if="quote.status === 'canceled'">Expiré</div>
-                <div class="mb-2 mr-2 badge badge-success float-right" v-if="quote.status === 'billed'">Facturé</div>
-                <div class="mb-2 mr-2 float-right" v-if="quote.status === 'in_progress'">
-                    {{ quote.deadline.d }} jour(s) restant
+                <div class="mb-2 mr-2 badge badge-dark float-right" v-if="purchase_order.status === 'canceled'">Expiré</div>
+                <div class="mb-2 mr-2 badge badge-success float-right" v-if="purchase_order.status === 'billed'">Facturé</div>
+                <div class="mb-2 mr-2 float-right" v-if="purchase_order.status === 'in_progress'">
+                    {{ purchase_order.deadline.d }} jour(s) restant
                 </div>
             </div>
         </div>
@@ -47,34 +47,34 @@
         <div class="form-row">
             <div class="col-md-6">
                 <div class="position-relative form-group">
-                    <label for="quote_number" class="">Numéro de devis</label>
-                    <input name="quote_number" id="quote_number" placeholder="" type="text" class="form-control form-control-sm" v-model="$v.quote.quote_number.$model" readonly>
-                    <small class="form-text text-danger" v-if="!$v.quote.quote_number.required">Champs requis.</small>
+                    <label for="purchase_order_number" class="">Numéro de commande</label>
+                    <input name="purchase_order_number" id="purchase_order_number" placeholder="" type="text" class="form-control form-control-sm" v-model="$v.purchase_order.purchase_order_number.$model" readonly>
+                    <small class="form-text text-danger" v-if="!$v.purchase_order.purchase_order_number.required">Champs requis.</small>
                 </div>
             </div>
             <div class="col-md-6">
                 <div class="position-relative form-group">
                     <label class="">Client</label>
                     <div class="bg-light pt-1 pl-2 pr-2 pb-1" style="border-radius: 5px">
-                        <b>{{ quote.customer.company_name }}</b><br>
-                        {{ quote.customer.phonenumber }}<br>
-                        {{ quote.customer.email }}<br>
-                        {{ quote.customer.address }}
+                        <b>{{ purchase_order.customer.company_name }}</b><br>
+                        {{ purchase_order.customer.phonenumber }}<br>
+                        {{ purchase_order.customer.email }}<br>
+                        {{ purchase_order.customer.address }}
                     </div>
-                    <!--<select class="form-control" name="customer" id="customer" v-model="$v.quote.customer_id.$model" disabled>-->
+                    <!--<select class="form-control" name="customer" id="customer" v-model="$v.purchase_order.customer_id.$model" disabled>-->
                         <!--<option value="">-&#45;&#45; Selectionnez un client s'il vous plait &#45;&#45;</option>-->
                         <!--<option v-for="customer in customers" v-bind:value="customer.id">{{ customer.company_name}}</option>-->
                     <!--</select>-->
-                    <!--<small class="form-text text-danger" v-if="!$v.quote.customer_id.required">Champs requis.</small>-->
+                    <!--<small class="form-text text-danger" v-if="!$v.purchase_order.customer_id.required">Champs requis.</small>-->
                 </div>
             </div>
         </div>
         <div class="form-row">
             <div class="col-md-6">
                 <div class="position-relative form-group">
-                    <label for="title" class="">Titre du devis</label>
-                    <input name="title" id="title" placeholder="" type="text" class="form-control form-control-sm" v-model="$v.quote.title.$model" :readonly="quote.expired || quote.is_billed">
-                    <small class="form-text text-danger" v-if="!$v.quote.title.required">Champs requis.</small>
+                    <label for="title" class="">Titre de la commande</label>
+                    <input name="title" id="title" placeholder="" type="text" class="form-control form-control-sm" v-model="$v.purchase_order.title.$model" :readonly="purchase_order.expired || purchase_order.is_billed">
+                    <small class="form-text text-danger" v-if="!$v.purchase_order.title.required">Champs requis.</small>
                 </div>
             </div>
         </div>
@@ -93,47 +93,47 @@
                         </tr>
                         </thead>
                         <tbody>
-                        <tr v-for="(item, index) in quote.items" :key="index">
+                        <tr v-for="(item, index) in purchase_order.items" :key="index">
                             <td>
-                                <textarea class="form-control form-control-sm" type="text" name="label" rows="1" v-model="item.label" :readonly="quote.status === 'billed'"></textarea>
+                                <textarea class="form-control form-control-sm" type="text" name="label" rows="1" v-model="item.label" :readonly="purchase_order.status === 'billed'"></textarea>
                             </td>
                             <td>
-                                <input class="form-control form-control-sm" type="number" name="pu" v-model="item.pu" v-on:input="editItem(item)" :readonly="quote.status === 'billed'">
+                                <input class="form-control form-control-sm" type="number" name="pu" v-model="item.pu" v-on:input="editItem(item)" :readonly="purchase_order.status === 'billed'">
                             </td>
                             <td>
-                                <input class="form-control form-control-sm" type="number" name="qty" v-model="item.qty" v-on:input="editItem(item)" :readonly="quote.status === 'billed'">
+                                <input class="form-control form-control-sm" type="number" name="qty" v-model="item.qty" v-on:input="editItem(item)" :readonly="purchase_order.status === 'billed'">
                             </td>
                             <td>
                                 <input class="form-control form-control-sm" type="number" name="amount" readonly v-model="item.amount">
                             </td>
                             <td>
                                 <button class="btn btn-danger btn-sm" @click="removeItem(index)" type="button" title="Retirer l'élément"
-                                    v-if="quote.items.length > 1 && quote.status !== 'billed'">
+                                    v-if="purchase_order.items.length > 1 && purchase_order.status !== 'billed'">
                                     <i class="fa fa-times-circle"></i>
                                 </button>
                             </td>
                         </tr>
                         <tr>
                             <td colspan="5" class="text-left">
-                                <button class="btn btn-success btn-sm" @click="addItem()" type="button" title="Ajouter un élément" v-if="quote.status !== 'billed'">
+                                <button class="btn btn-success btn-sm" @click="addItem()" type="button" title="Ajouter un élément" v-if="purchase_order.status !== 'billed'">
                                     <i class="fa fa-plus"></i>
                                 </button>
                             </td>
                         </tr>
                         <tr>
                             <th colspan="3" class="text-right">Montant Total HT</th>
-                            <th colspan="1" class="text-right">{{ quote.amount_et | numFormat }}</th>
+                            <th colspan="1" class="text-right">{{ purchase_order.amount_et | numFormat }}</th>
                         </tr>
                         <tr>
                             <th colspan="3" class="text-right">Remise (%)</th>
                             <th colspan="1" class="text-right">
                                 <div class="row">
                                     <div class="col-md-6">
-                                        <input class="form-control" type="number" name="amount" v-model="quote.discount"
-                                               v-on:input="calculateAmount" max="100" min="0" :readonly="quote.status === 'billed'">
+                                        <input class="form-control" type="number" name="amount" v-model="purchase_order.discount"
+                                               v-on:input="calculateAmount" max="100" min="0" :readonly="purchase_order.status === 'billed'">
                                     </div>
                                     <div class="col-md-6">
-                                        {{ ((quote.amount_et * quote.discount) /100) | numFormat }}
+                                        {{ ((purchase_order.amount_et * purchase_order.discount) /100) | numFormat }}
                                     </div>
                                 </div>
                             </th>
@@ -141,7 +141,7 @@
                         <tr>
                             <th colspan="3" class="text-right">Montant remisé</th>
                             <th colspan="1" class="text-right">
-                                {{ quote.amount_discount | numFormat }}
+                                {{ purchase_order.amount_discount | numFormat }}
                             </th>
                         </tr>
                         <tr v-for="tax in selectedTaxes">
@@ -150,7 +150,7 @@
                         </tr>
                         <tr>
                             <th colspan="3" class="text-right">Net à payer</th>
-                            <th colspan="1" class="text-right bg-success text-light">{{ quote.amount | numFormat }}</th>
+                            <th colspan="1" class="text-right bg-success text-light">{{ purchase_order.amount | numFormat }}</th>
                         </tr>
                         </tbody>
                     </table>
@@ -158,16 +158,16 @@
             </div>
         </div>
 
-        <div class="row" v-if="quote.status !== 'billed'">
+        <div class="row" v-if="purchase_order.status !== 'billed'">
             <div class="col-md-12">
-                <button type="button" class="mt-2 btn btn-primary" :disabled="$v.quote.$invalid" @click="saveQuote" v-if="!btnLoading">
+                <button type="button" class="mt-2 btn btn-primary" :disabled="$v.purchase_order.$invalid" @click="savePurchaseOrder" v-if="!btnLoading">
                     <i class="fa fa-save"></i> Enregistrer
                 </button>
                 <button class="mt-2 btn btn-primary shadow-2" type="button" disabled="" v-if="btnLoading">
                     <span class="spinner-grow spinner-grow-sm" role="status"></span>
                     Traitement en cours
                 </button>
-                <button type="button" class="mt-2 btn btn-danger" :disabled="$v.quote.$invalid || btnLoading" onclick="window.history.back();" v-if="action === 'reedit'">
+                <button type="button" class="mt-2 btn btn-danger" :disabled="$v.purchase_order.$invalid || btnLoading" onclick="window.history.back();" v-if="action === 'reedit'">
                     <i class="fa fa-save"></i> Annuler la réédition
                 </button>
                 <button type="button" class="mt-2 btn btn-secondary" @click="selectTaxes">
@@ -207,14 +207,14 @@
 </template>
 
 <script>
-    import { required } from 'vuelidate/lib/validators'
+    import { required, minLength } from 'vuelidate/lib/validators'
 
     export default {
-        props : ['customers', 'taxes', 'old_quote', 'quote_items', 'quote_taxes', 'action'],
+        props : ['customers', 'taxes', 'old_purchase_order', 'purchase_order_items', 'purchase_order_taxes', 'action'],
         data(){
             return{
-                quote: {
-                    quote_number: '',
+                purchase_order: {
+                    purchase_order_number: '',
                     title: '',
                     customer_id: '',
                     items: [],
@@ -239,8 +239,8 @@
             }
         },
         validations: {
-            quote: {
-                quote_number: {
+            purchase_order: {
+                purchase_order_number: {
                     required
                 },
                 customer_id: {
@@ -248,6 +248,23 @@
                 },
                 title: {
                     required
+                },
+                items:{
+                    required,
+                    minLength: minLength(1),
+                    $each: {
+                        label: {
+                            required,
+                            minLength: minLength(2)
+                        },
+                        pu: {
+                            required,
+                        },
+                        qty: {
+                            required
+                        }
+
+                    }
                 }
 
             }
@@ -265,22 +282,22 @@
             this.csrfToken = document.querySelector('meta[name="csrf-token"]').content
 
             this.initTaxes()
-            this.quote.id = this.old_quote.id;
-            this.fetchQuote();
-            this.quote.items = [...this.quote_items]
-            this.selectedTaxes = [...this.quote_taxes]
+            this.purchase_order.id = this.old_purchase_order.id;
+            this.fetchPurchaseOrder();
+            this.purchase_order.items = [...this.purchase_order_items]
+            this.selectedTaxes = [...this.purchase_order_taxes]
         },
 
         methods: {
-            fetchQuote() {
-                let page_url = `/api/quote/${this.quote.id}?api_token=${this.api_token}`;
+            fetchPurchaseOrder() {
+                let page_url = `/api/purchase-orders/${this.purchase_order.id}?api_token=${this.api_token}`;
                 this.spinner = true;
 
                 fetch(page_url)
                     .then(res => res.json())
                     .then(res => {
                         this.spinner = false;
-                        this.quote = res.data
+                        this.purchase_order = res.data
                     })
                     .catch(error => {
                         this.spinner = false;
@@ -295,7 +312,7 @@
                     });
             },
             addItem(){
-                this.quote.items.push({
+                this.purchase_order.items.push({
                     id: 0,
                     label: '',
                     pu: 0,
@@ -307,15 +324,15 @@
                 this.calculateAmount()
             },
             removeItem(index){
-                this.quote.items.splice(index, 1)
+                this.purchase_order.items.splice(index, 1)
                 this.calculateAmount()
             },
-            saveQuote(){
+            savePurchaseOrder(){
                 this.btnLoading = true
-                this.quote.selected_taxes = this.selectedTaxes
-                fetch(`/api/quote?api_token=${this.api_token}&action=${this.action}`, {
+                this.purchase_order.selected_taxes = this.selectedTaxes
+                fetch(`/api/purchase-orders/${this.purchase_order.id}?api_token=${this.api_token}&action=${this.action}`, {
                     method: 'PUT',
-                    body: JSON.stringify(this.quote),
+                    body: JSON.stringify(this.purchase_order),
                     headers: {
                         'content-type': 'application/json'
                     }
@@ -323,11 +340,11 @@
                     .then(res => res.json())
                     .then(res => {
                         this.btnLoading = false
-                        this.quote = res.data;
+                        this.purchase_order = res.data;
                         this.$swal({
                             position: 'top-end',
                             icon: 'success',
-                            title: 'Devis enregistré!',
+                            title: 'Commande enregistrée!',
                             showConfirmButton: false,
                             timer: 5000,
                             toast: true
@@ -377,23 +394,23 @@
                 this.calculateAmount()
             },
             calculateTax(value){
-                // let amountWithdiscount = this.quote.amount_et - this.quote.discount
-                return (this.quote.amount_discount * value)/100
+                // let amountWithdiscount = this.purchase_order.amount_et - this.purchase_order.discount
+                return (this.purchase_order.amount_discount * value)/100
             },
             calculateAmount(){
-                this.quote.amount_et = 0
-                this.quote.amount = 0
-                this.quote.items.forEach(res=>{
-                    this.quote.amount_et += res.amount
+                this.purchase_order.amount_et = 0
+                this.purchase_order.amount = 0
+                this.purchase_order.items.forEach(res=>{
+                    this.purchase_order.amount_et += res.amount
                 })
-                this.quote.amount_discount = this.quote.amount_et - (this.quote.amount_et * this.quote.discount)/100
+                this.purchase_order.amount_discount = this.purchase_order.amount_et - (this.purchase_order.amount_et * this.purchase_order.discount)/100
 
-                this.quote.amount_taxes = 0
+                this.purchase_order.amount_taxes = 0
                 this.selectedTaxes.forEach(item=>{
-                    this.quote.amount_taxes += this.calculateTax(item.value)
+                    this.purchase_order.amount_taxes += this.calculateTax(item.value)
                 })
 
-                this.quote.amount = this.quote.amount_discount + this.quote.amount_taxes
+                this.purchase_order.amount = this.purchase_order.amount_discount + this.purchase_order.amount_taxes
             },
             includedTax(tax){
                 let index = this.selectedTaxes.findIndex(x => x.id === tax.id);
@@ -401,38 +418,38 @@
                 if(index !== -1) return true
                 else return false
             },
-            printQuote(id){
-                window.open(`/quote/print/${id}`, '_blank');
+            printPurchaseOrder(id){
+                window.open(`/purchase-order/print/${id}`, '_blank');
             },
-            billQuote(id){
+            billPurchaseOrder(id){
                 this.$swal({
                     title: 'Facturer',
-                    text: 'Etes-vous sur de vouloir facturer ce devis?',
+                    text: 'Etes-vous sur de vouloir facturer cette commande?',
                     showCancelButton: true,
                     confirmButtonText: 'Facturer',
                     confirmButtonColor: '#28A745',
                     // showLoaderOnConfirm: true,
                 }).then((result) => {
                     if (result.value) {
-                        window.location = `/quote/bill/${id}`;
+                        window.location = `/purchase_order/bill/${id}`;
                     }
                 })
             },
-            duplicateQuote(id){
+            duplicatePurchaseOrder(id){
                 this.$swal({
                     title: 'Dupliquer',
-                    text: 'Etes-vous sur de vouloir dupliquer ce devis?',
+                    text: 'Etes-vous sur de vouloir dupliquer cette commande?',
                     showCancelButton: true,
                     confirmButtonText: 'Dupliquer',
                     confirmButtonColor: '#28A745',
                     // showLoaderOnConfirm: true,
                 }).then((result) => {
                     if (result.value) {
-                        window.location = `/quote/duplicate/${id}`;
+                        window.location = `/purchase-order/duplicate/${id}`;
                     }
                 })
             },
-            deleteQuote(id){
+            deletePurchaseOrder(id){
                 let vm = this;
 
                 this.$swal({
@@ -443,7 +460,7 @@
                     confirmButtonColor: '#C82333',
                     showLoaderOnConfirm: true,
                     preConfirm: (login) => {
-                        return fetch(`/api/quote/${id}?api_token=${this.api_token}`, { method: 'delete' })
+                        return fetch(`/api/purchase_order/${id}?api_token=${this.api_token}`, { method: 'delete' })
                             .then(response => {
                                 if (!response.ok) {
                                     throw new Error(response.statusText)
@@ -462,21 +479,21 @@
                         this.$swal({
                             position: 'top-end',
                             icon: 'warning',
-                            title: 'Ce devis a été supprimé',
+                            title: 'Cette commande a été supprimée',
                             showConfirmButton: false,
                             timer: 5000,
                             toast: true
                         })
-                        window.location = '/quotes';
+                        window.location = '/purchase-orders';
                     }
                 })
 
             },
             sendEmail(){
                 this.spinner = true
-                fetch(`/api/quote/send-email?api_token=${this.api_token}`, {
+                fetch(`/api/purchase-order/send-email?api_token=${this.api_token}`, {
                     method: 'POST',
-                    body: JSON.stringify(this.quote),
+                    body: JSON.stringify(this.purchase_order),
                     headers: {
                         'content-type': 'application/json'
                     }
@@ -507,7 +524,7 @@
                     });
             },
             printPurchaseOrder(id){
-                window.open(`/quote/purchase-order/print/${id}`, '_blank');
+                window.open(`/purchase-order/print/${id}`, '_blank');
             }
 
 

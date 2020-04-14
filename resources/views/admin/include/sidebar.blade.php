@@ -63,7 +63,7 @@
                     </ul>
                 </li>
                 {{--  Quotes and invoices --}}
-                <li class="@isset($page) {{ ($page == 'quote' || $page == 'invoice' || $page == 'credit_note') ? 'mm-active' : '' }} @endisset">
+                <li class="@isset($page) {{ ($page == 'quote' || $page == 'invoice' || $page == 'credit_note' || $page == 'purchase_order') ? 'mm-active' : '' }} @endisset">
                     <a href="#">
                         <i class="metismenu-icon fa fa-address-book"></i>
                         Devis et Factures
@@ -74,6 +74,12 @@
                             <a href="{{ route('quote.index') }}" class="@isset($sub_page) {{ ($sub_page == 'quote.list') ? 'mm-active' : '' }} @endisset">
                                 <i class="metismenu-icon"></i>
                                 Devis
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{{ route('purchase_order.index') }}" class="@isset($sub_page) {{ ($sub_page == 'purchase_order.list') ? 'mm-active' : '' }} @endisset">
+                                <i class="metismenu-icon"></i>
+                                Bons de commande
                             </a>
                         </li>
                         <li>

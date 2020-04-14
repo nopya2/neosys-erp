@@ -105,6 +105,19 @@ Route::middleware('auth:api')->delete('quote/{quote}', 'QuoteController@destroy'
 //Send quote by email
 Route::middleware('auth:api')->post('quote/send-email', 'QuoteController@sendEmail');
 
+/**** Purchase Orders ****/
+//Purchase orders list
+Route::middleware('auth:api')->get('purchase-orders', 'PurchaseOrderController@index');
+//Create a purchase order list
+Route::middleware('auth:api')->post('purchase-order', 'PurchaseOrderController@store');
+//Show a purchase order
+Route::middleware('auth:api')->get('purchase-orders/{purchase_order}', 'PurchaseOrderController@show');
+//Update purchase order
+Route::middleware('auth:api')->put('purchase-orders/{purchase_order}', 'PurchaseOrderController@update');
+//Update purchase order by patch
+Route::middleware('auth:api')->patch('purchase-orders/{purchase_order}', 'PurchaseOrderController@changeStatus');
+
+/**** Invoices ****/
 //List invoices
 Route::middleware('auth:api')->get('invoices', 'InvoiceController@index');
 //Create an invoice

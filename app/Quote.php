@@ -9,7 +9,7 @@ class Quote extends Model
 {
     protected $fillable = [
         'id', 'customer_id', 'user_id', 'quote_number', 'title', 'amount_et', 'discount', 'amount_discount', 'amount', 'amount_taxes'
-        , 'created_at', 'updated_at', 'expire_at', 'expired', 'is_billed'
+        , 'created_at', 'updated_at', 'expire_at', 'expired', 'is_billed', 'status'
     ];
 
     protected $casts = [
@@ -39,10 +39,6 @@ class Quote extends Model
         return $this->belongsToMany('App\Item');
     }
 
-    public function purchaseOrder(){
-        return $this->hasOne('App\PurchaseOrder');
-    }
-
     public function getDeadlineAttribute(){
 
         $now = new \DateTime();
@@ -60,11 +56,6 @@ class Quote extends Model
         }
 
         return false;
-    }
-
-    public function getExpireAtAttribute(){
-        $informations = Functions::informations();
-        return $this->updated_at->add(new \DateInterval('P'.$informations->quote_delay.'D'));
     }
 
 }

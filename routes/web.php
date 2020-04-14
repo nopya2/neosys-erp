@@ -67,6 +67,11 @@ Route::get('/quote/bill/{quote}', 'QuoteController@billQuote')->name('quote.bill
 Route::get('/quote/duplicate/{quote}', 'QuoteController@duplicateQuote')->name('quote.duplicate')->middleware('auth');
 Route::get('/quote/purchase-order/print/{quote}', 'QuoteController@printPurchaseOrder')->name('quote.purchase-order.print')->middleware('auth');
 
+/***** Purchase Order ****/
+Route::get('/purchase-orders', 'PurchaseOrderController@home')->name('purchase_order.index')->middleware('auth');
+Route::get('/purchase-order/create', 'PurchaseOrderController@create')->name('purchase_order.create')->middleware('auth');
+Route::get('/purchase-orders/{purchase_order}/edit', 'PurchaseOrderController@edit')->name('purchase_order.edit')->middleware('auth');
+
 /***** Invoices ****/
 Route::get('/invoices', 'InvoiceController@home')->name('invoice.index')->middleware('auth');
 Route::get('/invoice/create', 'InvoiceController@create')->name('invoice.create')->middleware('auth');
@@ -88,5 +93,7 @@ Route::post('/tax', 'TaxController@store')->name('tax.store')->middleware('auth'
 Route::get('/tax/{tax}/edit', 'TaxController@edit')->name('tax.edit')->middleware('auth');
 Route::post('/tax/{tax}/edit', 'TaxController@update')->name('tax.update')->middleware('auth');
 
-
+//Tous les crons
+/* Actualisation des status du devis toutes les 24H00*/
+Route::get('/cron/update-status-quote', 'QuoteController@updateStatusQuote');
 
