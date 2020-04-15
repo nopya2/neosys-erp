@@ -257,14 +257,50 @@ class PurchaseOrderController extends Controller
         return new PurchaseOrderResource($purchaseOrder);
     }
 
+    public function duplicate($purchaseOrder, Request $request){
+        $purchaseOrder = PurchaseOrder::find($purchaseOrder);
+
+        $taxes = Tax::where('name', 'LIKE', '%%')
+            ->orderBy('name', 'asc')
+            ->get();
+
+        return view('admin.purchase_orders.duplicate', [
+            'purchase_order' => $purchaseOrder,
+            'page' => 'purchase_order',
+            'sub_page' => 'purchase_order.list',
+            'taxes' => $taxes,
+        ]);
+    }
+
+    public function updateStatus(Request $request){
+        $purchaseOrders = PurchaseOrder::where('status', 'validated')->get();
+        $now = new \DateTime();
+        foreach ($purchaseOrders as $purchaseOrder){
+            if($now > $purchaseOrder->expire_at){
+                $purchaseOrder->status = 'canceled';
+                $purchaseOrder->updated_at = new \DateTime();
+                $purchaseOrder->save();
+            }
+        }
+
+        return 1;
+    }
+
     /**
      * Remove the specified resource from storage.
      *
      * @param  \App\PurchaseOrder  $purchaseOrder
      * @return \Illuminate\Http\Response
      */
-    public function destroy(PurchaseOrder $purchaseOrder)
+    public function destroy($purchaseOrder)
     {
-        //
+        $purchaseOrder = PurchaseOrder::find($purchaseOrder);
+        if($purchaseOrder->status !== 'draft'){
+            return new JsonResponse(['message'=>'Action non permise'], 400);
+        }
+
+        if($purchaseOrder->delete()){
+            return new PurchaseOrderResource($purchaseOrder);
+        }
     }
 }

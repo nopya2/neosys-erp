@@ -23,8 +23,9 @@ class User extends JsonResource
             'phonenumber' => $this->phonenumber,
             'role' => $this->role,
             'status' => $this->status,
-            'api_token' => $this->api_token,
+//            'api_token' => $this->api_token,
             'fonction' => $this->fonction,
+            'avatar' => $this->avatar
         ];
     }
 }

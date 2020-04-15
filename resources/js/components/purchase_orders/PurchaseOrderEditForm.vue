@@ -11,24 +11,28 @@
                     <button type="button" aria-haspopup="true" aria-expanded="false" data-toggle="dropdown"
                             class="dropdown-toggle btn btn-primary" id="dropdownMenuButton">Actions</button>
                     <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                        <button class="dropdown-item" type="button" @click="billPurchaseOrder(purchase_order.id)" :disabled="purchase_order.status === 'billed'">
+                        <button type="button" tabindex="0" class="dropdown-item text-success" @click="changeStatus(purchase_order,'validate')"
+                                v-if="purchase_order.status === 'draft'">
+                            <i class="fa fa-check"></i>&nbsp;Valider
+                        </button>
+                        <button type="button" tabindex="0" class="dropdown-item text-danger" v-if="purchase_order.status === 'draft'" @click="changeStatus(purchase_order,'reject')">
+                            <i class="fa fa-ban"></i>&nbsp;Refuser
+                        </button>
+                        <button type="button" tabindex="0" class="dropdown-item text-danger" v-if="purchase_order.status === 'validated'" @click="changeStatus(purchase_order,'cancel')">
+                            <i class="fa fa-ban"></i>&nbsp;Annuler
+                        </button>
+                        <button type="button" tabindex="0" class="dropdown-item" v-if="purchase_order.status === 'validated'" @click="changeStatus(purchase_order,'bill')">
                             <i class="fa fa-file"></i>&nbsp;Facturer
                         </button>
-                        <div class="dropdown-divider"></div>
-                        <button class="dropdown-item" type="button" @click="printPurchaseOrder(purchase_order.id)">
+                        <div class="dropdown-divider" v-if="purchase_order.status === 'validated' || purchase_order.status === 'draft'"></div>
+                        <button type="button" tabindex="0" class="dropdown-item" @click="printPurchaseOrder(purchase_order.id)">
                             <i class="fa fa-print"></i>&nbsp;Imprimer
                         </button>
-                        <button type="button" tabindex="0" class="dropdown-item" @click="printPurchaseOrder(purchase_order.id)" :disabled="purchase_order.status === 'billed' || purchase_order.status === 'canceled'">
-                            <i class="fa fa-print"></i>&nbsp;Imprimer bon de commande
-                        </button>
-                        <button type="button" class="dropdown-item" @click="sendEmail()">
-                            <i class="fa fa-envelope"></i>&nbsp;Envoyer
-                        </button>
                         <div class="dropdown-divider"></div>
-                        <button type="button" class="dropdown-item" @click="duplicatePurchaseOrder(purchase_order.id)">
+                        <button type="button" class="dropdown-item" @click="duplicate(purchase_order.id)">
                             <i class="fa fa-clone"></i>&nbsp;Dupliquer
                         </button>
-                        <button type="button" class="dropdown-item text-danger" :disabled="purchase_order.status === 'billed'" @click="deletePurchaseOrder(purchase_order.id)">
+                        <button type="button" class="dropdown-item text-danger" :disabled="purchase_order.status !== 'draft'" @click="deletePurchaseOrder(purchase_order.id)">
                             <i class="fa fa-trash"></i>&nbsp;Supprimer
                         </button>
                     </div>
@@ -36,11 +40,14 @@
             </div>
 
             <div class="col-md-6">
-                <div class="mb-2 mr-2 badge badge-dark float-right" v-if="purchase_order.status === 'canceled'">Expiré</div>
+                <div class="mb-2 mr-2 badge badge-dark float-right" v-if="purchase_order.status === 'draft'">Brouillon</div>
+                <div class="mb-2 mr-2 badge badge-danger float-right" v-if="purchase_order.status === 'canceled'">Annulé</div>
+                <div class="mb-2 mr-2 badge badge-danger float-right" v-if="purchase_order.status === 'rejected'">Refusé</div>
                 <div class="mb-2 mr-2 badge badge-success float-right" v-if="purchase_order.status === 'billed'">Facturé</div>
-                <div class="mb-2 mr-2 float-right" v-if="purchase_order.status === 'in_progress'">
-                    {{ purchase_order.deadline.d }} jour(s) restant
-                </div>
+                <span v-if="purchase_order.status === 'validated'">
+                    <!--{{ purchase_order.deadline.d }} jour(s) restant-->
+                    <div class="mb-2 mr-2 badge badge-success float-right">Validé (en attente de facturation)</div>
+                </span>
             </div>
         </div>
 
@@ -73,7 +80,7 @@
             <div class="col-md-6">
                 <div class="position-relative form-group">
                     <label for="title" class="">Titre de la commande</label>
-                    <input name="title" id="title" placeholder="" type="text" class="form-control form-control-sm" v-model="$v.purchase_order.title.$model" :readonly="purchase_order.expired || purchase_order.is_billed">
+                    <input name="title" id="title" placeholder="" type="text" class="form-control form-control-sm" v-model="$v.purchase_order.title.$model" :readonly="purchase_order.status !== 'draft'">
                     <small class="form-text text-danger" v-if="!$v.purchase_order.title.required">Champs requis.</small>
                 </div>
             </div>
@@ -95,27 +102,27 @@
                         <tbody>
                         <tr v-for="(item, index) in purchase_order.items" :key="index">
                             <td>
-                                <textarea class="form-control form-control-sm" type="text" name="label" rows="1" v-model="item.label" :readonly="purchase_order.status === 'billed'"></textarea>
+                                <textarea class="form-control form-control-sm" type="text" name="label" rows="1" v-model="item.label" :readonly="purchase_order.status !== 'draft'"></textarea>
                             </td>
                             <td>
-                                <input class="form-control form-control-sm" type="number" name="pu" v-model="item.pu" v-on:input="editItem(item)" :readonly="purchase_order.status === 'billed'">
+                                <input class="form-control form-control-sm" type="number" name="pu" v-model="item.pu" v-on:input="editItem(item)" :readonly="purchase_order.status !== 'draft'">
                             </td>
                             <td>
-                                <input class="form-control form-control-sm" type="number" name="qty" v-model="item.qty" v-on:input="editItem(item)" :readonly="purchase_order.status === 'billed'">
+                                <input class="form-control form-control-sm" type="number" name="qty" v-model="item.qty" v-on:input="editItem(item)" :readonly="purchase_order.status !== 'draft'">
                             </td>
                             <td>
                                 <input class="form-control form-control-sm" type="number" name="amount" readonly v-model="item.amount">
                             </td>
                             <td>
                                 <button class="btn btn-danger btn-sm" @click="removeItem(index)" type="button" title="Retirer l'élément"
-                                    v-if="purchase_order.items.length > 1 && purchase_order.status !== 'billed'">
+                                    v-if="purchase_order.items.length > 1 && purchase_order.status === 'draft'">
                                     <i class="fa fa-times-circle"></i>
                                 </button>
                             </td>
                         </tr>
                         <tr>
                             <td colspan="5" class="text-left">
-                                <button class="btn btn-success btn-sm" @click="addItem()" type="button" title="Ajouter un élément" v-if="purchase_order.status !== 'billed'">
+                                <button class="btn btn-success btn-sm" @click="addItem()" type="button" title="Ajouter un élément" v-if="purchase_order.status === 'draft'">
                                     <i class="fa fa-plus"></i>
                                 </button>
                             </td>
@@ -129,8 +136,8 @@
                             <th colspan="1" class="text-right">
                                 <div class="row">
                                     <div class="col-md-6">
-                                        <input class="form-control" type="number" name="amount" v-model="purchase_order.discount"
-                                               v-on:input="calculateAmount" max="100" min="0" :readonly="purchase_order.status === 'billed'">
+                                        <input class="form-control form-control-sm" type="number" name="amount" v-model="purchase_order.discount"
+                                               v-on:input="calculateAmount" max="100" min="0" :readonly="purchase_order.status !== 'draft'">
                                     </div>
                                     <div class="col-md-6">
                                         {{ ((purchase_order.amount_et * purchase_order.discount) /100) | numFormat }}
@@ -158,7 +165,7 @@
             </div>
         </div>
 
-        <div class="row" v-if="purchase_order.status !== 'billed'">
+        <div class="row" v-if="purchase_order.status === 'draft'">
             <div class="col-md-12">
                 <button type="button" class="mt-2 btn btn-primary" :disabled="$v.purchase_order.$invalid" @click="savePurchaseOrder" v-if="!btnLoading">
                     <i class="fa fa-save"></i> Enregistrer
@@ -208,7 +215,7 @@
 
 <script>
     import { required, minLength } from 'vuelidate/lib/validators'
-
+    import { Functions } from '../../scripts/functions'
     export default {
         props : ['customers', 'taxes', 'old_purchase_order', 'purchase_order_items', 'purchase_order_taxes', 'action'],
         data(){
@@ -435,7 +442,7 @@
                     }
                 })
             },
-            duplicatePurchaseOrder(id){
+            duplicate(id){
                 this.$swal({
                     title: 'Dupliquer',
                     text: 'Etes-vous sur de vouloir dupliquer cette commande?',
@@ -445,7 +452,7 @@
                     // showLoaderOnConfirm: true,
                 }).then((result) => {
                     if (result.value) {
-                        window.location = `/purchase-order/duplicate/${id}`;
+                        window.location = `/purchase-orders/${id}/duplicate`;
                     }
                 })
             },
@@ -454,13 +461,13 @@
 
                 this.$swal({
                     title: 'Supprimer',
-                    text: 'Etes-vous sur de vouloir supprimer?',
+                    text: 'Etes-vous sur de vouloir supprimer cette commande?',
                     showCancelButton: true,
                     confirmButtonText: 'Supprimer',
                     confirmButtonColor: '#C82333',
                     showLoaderOnConfirm: true,
                     preConfirm: (login) => {
-                        return fetch(`/api/purchase_order/${id}?api_token=${this.api_token}`, { method: 'delete' })
+                        return fetch(`/api/purchase-orders/${id}?api_token=${this.api_token}`, { method: 'delete' })
                             .then(response => {
                                 if (!response.ok) {
                                     throw new Error(response.statusText)
@@ -476,15 +483,8 @@
                     allowOutsideClick: () => !this.$swal.isLoading()
                 }).then((result) => {
                     if (result.value) {
-                        this.$swal({
-                            position: 'top-end',
-                            icon: 'warning',
-                            title: 'Cette commande a été supprimée',
-                            showConfirmButton: false,
-                            timer: 5000,
-                            toast: true
-                        })
-                        window.location = '/purchase-orders';
+                        Functions.showAlert('top-end', 'warning', 'Cette commande a été supprimée!');
+                        window.location = '/purchase-orders'
                     }
                 })
 
@@ -525,7 +525,81 @@
             },
             printPurchaseOrder(id){
                 window.open(`/purchase-order/print/${id}`, '_blank');
-            }
+            },
+            changeStatus(purchaseOrder, action){
+                let title = '';
+                let text = '';
+                let button  = '';
+                let temp = {...purchaseOrder};
+                let message = '';
+                switch (action){
+                    case 'validate':
+                        title = 'Validation';
+                        text = 'Etes-vous sur de vouloir valider cette commande?';
+                        button = 'Valider';
+                        temp.status = 'validated';
+                        message = 'Commande validée!';
+                        break;
+                    case 'reject':
+                        title = 'Refus';
+                        text = 'Etes-vous sur de vouloir refuser cette commande?';
+                        button = 'Refuser';
+                        temp.status = 'rejected';
+                        message = 'Commande refusée!';
+                        break;
+                    case 'cancel':
+                        title = 'Annulation';
+                        text = 'Etes-vous sur de vouloir annuler cette commande?';
+                        button = 'Annuler';
+                        temp.status = 'canceled';
+                        message = 'Commande annulée!';
+                        break;
+                    case 'bill':
+                        title = 'Facturation';
+                        text = 'Etes-vous sur de vouloir facturer cette commande?';
+                        button = 'Facturer';
+                        message = 'Commande facturée!';
+                        temp.status = 'billed';
+                        break;
+                }
+
+                this.$swal({
+                    title: title,
+                    text: text,
+                    showCancelButton: true,
+                    confirmButtonText: button,
+                    confirmButtonColor: '#28A745',
+                    showLoaderOnConfirm: true,
+                    preConfirm: (login) => {
+                        return fetch(`/api/purchase-orders/${purchaseOrder.id}?api_token=${this.api_token}`, {
+                            method: 'PATCH',
+                            body: JSON.stringify(temp),
+                            headers: {
+                                'content-type': 'application/json'
+                            }
+                        })
+                            .then(response => {
+                                if (!response.ok) {
+                                    throw new Error(response.statusText)
+                                }
+                                return response.json()
+                            })
+                            .catch(error => {
+                                this.$swal.showValidationMessage(
+                                    `Request failed: ${error}`
+                                )
+                            })
+                    },
+                    allowOutsideClick: () => !this.$swal.isLoading()
+                }).then((result) => {
+                    if (result.value) {
+                        // window.open(`/purchase-order/print/${id}`, '_blank');
+                        this.purchase_order = {...result.value.data};
+                        this.$forceUpdate();
+                        Functions.showAlert('top-end', 'warning', message)
+                    }
+                })
+            },
 
 
         }

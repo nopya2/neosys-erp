@@ -46,6 +46,20 @@ class QuoteObserver
     }
 
     /**
+     * Handle the quote "deleting" event.
+     *
+     * @param  \App\Quote  $quote
+     * @return void
+     */
+    public function deleting(Quote $quote)
+    {
+        foreach ($quote->items as $item){
+            $item->delete();
+        }
+    }
+
+
+    /**
      * Handle the quote "deleted" event.
      *
      * @param  \App\Quote  $quote

@@ -25,7 +25,7 @@
             </div>
             <div class="col-md-6">
                 <div class="position-relative form-group">
-                    <label for="title" class="">Titre du devis</label>
+                    <label for="title" class="">Titre de la commande</label>
                     <input name="title" id="title" placeholder="" type="text" class="form-control form-control-sm" v-model="$v.purchase_order.title.$model">
                     <small class="form-text text-danger" v-if="!$v.purchase_order.title.required">Champs requis.</small>
                 </div>
@@ -255,7 +255,7 @@
                         this.btnLoading = false
                         if (res.ok){
                             res.json().then(result =>{
-                                Functions.showAlert('top-end', 'success', 'Devis enregistré!')
+                                Functions.showAlert('top-end', 'success', 'Commande enregistrée!')
                                 window.location = `/purchase-orders/${result.data.id}/edit`
                             })
 

@@ -3,30 +3,44 @@
         <div class="form-row">
             <div class="col-md-6">
                 <div class="position-relative form-group">
-                    <label for="invoice_number" class="">Numéro de facture</label>
-                    <input name="invoice_number" id="invoice_number" placeholder="" type="text" class="form-control" v-model="$v.invoice.invoice_number.$model" readonly>
-                    <small class="form-text text-danger" v-if="!$v.invoice.invoice_number.required">Champs requis.</small>
-                </div>
-            </div>
-            <div class="col-md-6">
-                <div class="position-relative form-group">
-                    <label for="customer" class="">Client</label>
-                    <select class="form-control" name="customer" id="customer" v-model="$v.invoice.customer_id.$model">
-                        <option value="">--- Selectionnez un client s'il vous plait --</option>
-                        <option v-for="customer in customers" v-bind:value="customer.id">{{ customer.company_name}}</option>
-                    </select>
+                    <label>Client <i class="fa fa-plus-circle text-success" style="cursor: pointer" @click="addCustomer"></i></label>
+                    <v-select :options="customers" label="company_name" index="id" :filterable="false" @search="onSearch" v-model="$v.invoice.customer_id.$model"
+                              :reduce="company_name => company_name.id">
+                        <template slot="no-options">
+                            Aucun client trouvé
+                        </template>
+                        <template slot="option" slot-scope="option">
+                            <div class="d-center">
+                                {{ option.company_name }}
+                            </div>
+                        </template>
+                        <template slot="selected-option" slot-scope="option">
+                            <div class="selected d-center">
+                                {{ option.company_name }}
+                            </div>
+                        </template>
+                    </v-select>
                     <small class="form-text text-danger" v-if="!$v.invoice.customer_id.required">Champs requis.</small>
                 </div>
             </div>
-        </div>
-        <div class="form-row">
             <div class="col-md-6">
                 <div class="position-relative form-group">
                     <label for="title" class="">Titre de la facture</label>
-                    <input name="title" id="title" placeholder="" type="text" class="form-control" v-model="$v.invoice.title.$model">
+                    <input name="title" id="title" placeholder="" type="text" class="form-control form-control-sm" v-model="$v.invoice.title.$model">
                     <small class="form-text text-danger" v-if="!$v.invoice.title.required">Champs requis.</small>
                 </div>
             </div>
+            <!--<div class="col-md-6">-->
+                <!--<div class="position-relative form-group">-->
+                    <!--<label class="">Type de facture</label>-->
+                    <!--<select class="form-control form-control-sm" v-model="$v.invoice.type.$model">-->
+                        <!--<option value="standard">Standard</option>-->
+                        <!--<option value="credit_note">Avoir</option>-->
+                        <!--<option value="deposit">Accompte</option>-->
+                    <!--</select>-->
+                    <!--<small class="form-text text-danger" v-if="!$v.invoice.type.required">Champs requis.</small>-->
+                <!--</div>-->
+            <!--</div>-->
         </div>
 
         <div class="row mt-3">
@@ -45,16 +59,16 @@
                         <tbody>
                         <tr v-for="(item, index) in invoice.items" :key="index">
                             <td>
-                                <textarea class="form-control" type="text" name="label" rows="1" v-model="item.label"></textarea>
+                                <textarea class="form-control form-control-sm" type="text" name="label" rows="1" v-model="item.label"></textarea>
                             </td>
                             <td>
-                                <input class="form-control" type="number" name="pu" v-model="item.pu" v-on:input="editItem(item)">
+                                <input class="form-control form-control-sm" type="number" name="pu" v-model="item.pu" v-on:input="editItem(item)">
                             </td>
                             <td>
-                                <input class="form-control" type="number" name="qty" v-model="item.qty" v-on:input="editItem(item)">
+                                <input class="form-control form-control-sm" type="number" name="qty" v-model="item.qty" v-on:input="editItem(item)">
                             </td>
                             <td>
-                                <input class="form-control" type="number" name="amount" readonly v-model="item.amount">
+                                <input class="form-control form-control-sm" type="number" name="amount" readonly v-model="item.amount">
                             </td>
                             <td>
                                 <button class="btn btn-danger btn-sm" @click="removeItem(index)" type="button" title="Retirer l'élément"
@@ -79,7 +93,7 @@
                             <th colspan="1" class="text-right">
                                 <div class="row">
                                     <div class="col-md-6">
-                                        <input class="form-control" type="number" name="amount" v-model="invoice.discount"
+                                        <input class="form-control form-control-sm" type="number" name="amount" v-model="invoice.discount"
                                            v-on:input="calculateAmount" max="100" min="0">
                                     </div>
                                     <div class="col-md-6">
@@ -89,7 +103,7 @@
                             </th>
                         </tr>
                         <tr>
-                            <th colspan="3" class="text-right">Montant remisé</th>
+                            <th colspan="3" class="text-right">Net commercial</th>
                             <th colspan="1" class="text-right">
                                 {{ invoice.amount_discount | numFormat }}
                             </th>
@@ -153,25 +167,32 @@
 </template>
 
 <script>
-    import { required } from 'vuelidate/lib/validators'
+    import { required, minLength } from 'vuelidate/lib/validators'
+    import { Functions } from '../../scripts/functions.js'
 
     export default {
-        props : ['customers', 'invoice_number', 'taxes'],
+        props : ['invoice_number', 'taxes'],
         data(){
             return{
                 invoice: {
                     invoice_number: '',
                     title: '',
                     customer_id: '',
-                    items: [],
+                    items: [{
+                        label: '',
+                        pu: '',
+                        qty: ''
+                    }],
                     taxes: [],
                     amount_et: 0,
                     amount_discount: 0,
                     amount: 0,
                     discount: 0,
                     amount_taxes: 0,
+                    type: 'standard',
                     selected_taxes: []
                 },
+                customers: [],
                 spinner: false,
                 csrfToken: null,
                 api_token: '',
@@ -182,21 +203,35 @@
         },
         validations: {
             invoice: {
-                invoice_number: {
-                    required
-                },
                 customer_id: {
                     required
                 },
                 title: {
                     required
-                }
+                },
+                items:{
+                    required,
+                    minLength: minLength(1),
+                    $each: {
+                        label: {
+                            required,
+                            minLength: minLength(2)
+                        },
+                        pu: {
+                            required,
+                        },
+                        qty: {
+                            required
+                        }
 
+                    }
+                },
+                type: {
+                    required
+                }
             }
         },
         mounted() {
-            // $("#country").select2({placeholder:"Sélectionnez un pays"})
-            // $("#city").select2({placeholder:"Sélectionnez une ville"})
         },
         created(){
             if (window.localStorage.getItem('authUser')) {
@@ -207,7 +242,6 @@
             this.csrfToken = document.querySelector('meta[name="csrf-token"]').content
 
             this.invoice.invoice_number = this.invoice_number
-            this.addItem()
             this.initTaxes()
         },
 
@@ -215,9 +249,9 @@
             addItem(){
                 this.invoice.items.push({
                     label: '',
-                    pu: 0,
-                    qty: 0,
-                    amount: 0,
+                    pu: '',
+                    qty: '',
+                    amount: '',
                 })
             },
             removeItem(index){
@@ -237,30 +271,24 @@
                         'content-type': 'application/json'
                     }
                 })
-                    .then(res => res.json())
+                    // .then(res => res.json())
                     .then(res => {
                         this.btnLoading = false
-                        this.$swal({
-                            position: 'top-end',
-                            icon: 'success',
-                            title: 'Facture enregistrée!',
-                            showConfirmButton: false,
-                            timer: 5000,
-                            toast: true
-                        })
-
-                        window.location = `/invoice/${res.data.id}/edit`
+                        if(res.ok){
+                            res.json().then(result =>{
+                                Functions.showAlert('top-end', 'success', 'Facture enregistrée!')
+                                window.location = `/invoice/${result.data.id}/edit`
+                            })
+                        }else{
+                            res.json().then(error =>{
+                                Functions.showAlert('top-end', 'error', error.message)
+                                console.log(error)
+                            })
+                        }
                     })
                     .catch(error => {
                         this.btnLoading = false
-                        this.$swal({
-                            position: 'top-end',
-                            icon: 'error',
-                            title: 'Erreur traitement!',
-                            showConfirmButton: false,
-                            timer: 5000,
-                            toast: true
-                        })
+                        Functions.showAlert('top-end', 'error', 'Erreur traitement!')
                     });
             },
             editItem(item){
@@ -315,6 +343,25 @@
                 this.invoice.amount = this.invoice.amount_discount + this.invoice.amount_taxes
 
 
+            },
+            addCustomer(){
+                window.open('/customer/create?action=invoice', 'customer', "height=600,width=600,modal=yes,alwaysRaised=yes");
+            },
+            onSearch(search, loading) {
+                loading(true);
+                this.search(loading, search, this);
+            },
+            search(loading, search, vm){
+                fetch(`/api/customers/select?api_token=${this.api_token}&search=${search}`)
+                    .then(res => res.json())
+                    .then(res => {
+                        loading(false);
+                        vm.customers = res.data
+                    })
+                    .catch(error => {
+                        loading(false);
+                        console.log(error)
+                    });
             }
 
 

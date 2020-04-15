@@ -39,7 +39,7 @@
                         <div>
                             {{ pagination.total }} Facture(s)
                         </div>
-                        <div class="table-responsive">
+                        <div class="table-responsive" style="min-height: 450px;">
                             <table class="table table-bordered table-striped">
                                 <thead>
                                 <tr style="text-align: center;">
@@ -47,32 +47,76 @@
                                     <th>N&deg; de facture</th>
                                     <th>Intitulé</th>
                                     <th>Client</th>
+                                    <th>Type</th>
                                     <th>Montant</th>
                                     <th>Date</th>
                                     <!--<th>Expire</th>-->
                                     <th>Statut</th>
-                                    <th>Utilisateur</th>
+                                    <th></th>
                                 </tr>
                                 </thead>
                                 <tbody>
                                 <tr v-if="invoices.length <= 0">
                                     <td colspan="9" class="text-center">Aucune facture</td>
                                 </tr>
-                                <tr v-for="invoice in invoices" style="font-size: 13px">
+                                <tr v-for="invoice in invoices" style="font-size: 13px" v-bind:class="{'bg-info': selected == invoice.id }" @click="selected = invoice.id">
                                     <td>
-                                        <button class="btn btn-primary btn-sm" @click="openInvoice(invoice.id)" title="Consulter">
-                                            <i class="fa fa-eye"></i>
-                                        </button>
+                                        <div class="dropdown d-inline-block">
+                                            <button type="button" aria-haspopup="true" aria-expanded="false" data-toggle="dropdown"
+                                                    class="dropdown-toggle btn btn-primary btn-sm" id="dropdownMenuButton">{{ invoice.id }}</button>
+                                            <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                                                <button type="button" tabindex="0" class="dropdown-item" @click="openInvoice(invoice.id,'edit')" v-if="invoice.status === 'draft'">
+                                                    <i class="fa fa-edit"></i>&nbsp;Editer
+                                                </button>
+                                                <button type="button" tabindex="0" class="dropdown-item" @click="openInvoice(invoice.id,'edit')" v-if="invoice.status !== 'draft'">
+                                                    <i class="fa fa-eye"></i>&nbsp;Détails
+                                                </button>
+                                                <button type="button" class="dropdown-item" @click="validateInvoice(invoice)" v-if="invoice.status == 'draft'">
+                                                    <i class="fa fa-check"></i>&nbsp;Valider
+                                                </button>
+                                                <div class="dropdown-divider"></div>
+                                                <button type="button" class="dropdown-item" @click="convertInvoice(invoice.id)" :disabled="invoice.status == 0 || invoice.amount_paid > 0">
+                                                    <i class="fa fa-file"></i>&nbsp;Convertir en facture d'avoir
+                                                </button>
+                                                <button type="button" class="dropdown-item" :disabled="invoice.status == 0" @click="addRecurrence" v-if="!invoice.recurrence">
+                                                    <i class="fa fa-clock"></i>&nbsp;Récurrence
+                                                </button>
+                                                <button type="button" class="dropdown-item" @click="cancelRecurrence" v-if="invoice.recurrence">
+                                                    <i class="fa fa-clock"></i>&nbsp;Annuler la Récurrence
+                                                </button>
+                                                <div class="dropdown-divider"></div>
+                                                <button type="button" class="dropdown-item" :disabled="invoice.status == 0" @click="printInvoice(invoice.id)">
+                                                    <i class="fa fa-print"></i>&nbsp;Imprimer
+                                                </button>
+                                                <button type="button" class="dropdown-item" :disabled="invoice.status == 0" @click="sendEmail()">
+                                                    <i class="fa fa-envelope"></i>&nbsp;Envoyer
+                                                </button>
+                                                <!--<div class="dropdown-divider"></div>-->
+                                                <!--<button type="button" class="dropdown-item" :disabled="invoice.status == 0" disabled>-->
+                                                    <!--<i class="fa fa-print"></i>&nbsp;Imprimer bon de livraison-->
+                                                <!--</button>-->
+                                                <div class="dropdown-divider"></div>
+                                                <button type="button" class="dropdown-item" @click="duplicateInvoice(invoice.id)">
+                                                    <i class="fa fa-clone"></i>&nbsp;Dupliquer
+                                                </button>
+                                                <button type="button" class="dropdown-item" :disabled="invoice.status == 1" @click="deleteInvoice(invoice.id)">
+                                                    <i class="fa fa-trash"></i>&nbsp;Supprimer
+                                                </button>
+                                            </div>
+                                        </div>
                                     </td>
                                     <td>{{ invoice.invoice_number }}</td>
                                     <td>{{ invoice.title }}</td>
                                     <td>{{ invoice.customer.company_name }}<br>
                                         <i class="fa fa-phone"></i> {{ invoice.customer.phonenumber }}
                                     </td>
+                                    <td>
+                                        {{ invoice.show_type }}
+                                    </td>
                                     <td class="text-center">
                                         <div class="mb-2 mr-2 badge badge-info">{{ invoice.amount|numFormat }}</div>
                                     </td>
-                                    <td class="text-center">{{ invoice.created_at| moment("DD/MM/YYYY") }}</td>
+                                    <td class="text-center">{{ invoice.updated_at| moment("DD/MM/YYYY") }}</td>
                                     <!--<td class="text-center">-->
                                         <!--<span v-if="invoice.expired">-->
                                             <!--<div class="mb-2 mr-2 badge badge-dark">Expiré</div>-->
@@ -82,27 +126,32 @@
                                         <!--</span>-->
                                     <!--</td>-->
                                     <td class="text-center">
-                                        <div v-if="invoice.status == 1">
+                                        <div v-if="invoice.status !== 'draft' && invoice.state !== 'unpaid'">
                                             <div class="progress">
                                                 <div class="progress-bar" role="progressbar" v-bind:aria-valuenow="invoice.amount_paid"
                                                      aria-valuemin="0" v-bind:aria-valuemax="invoice.amount"
                                                      v-bind:style="{width: progessPercent(invoice.amount_paid, invoice.amount)+'%'}"
-                                                     v-bind:class="{'bg-success': invoice.is_paid}">
-                                                    <span v-if="invoice.is_paid">Payé</span>
-                                                    <span v-if="invoice.amount_paid <= 0 && !invoice.is_paid">En attente</span>
-                                                    <span v-if="invoice.amount_paid > 0 && !invoice.is_paid">En attente</span>
+                                                     v-bind:class="{'bg-success': invoice.state === 'paid', 'bg-danger': invoice.state === 'unpaid', 'bg-warning': invoice.state === 'waiting'}">
+                                                    <span v-if="invoice.state === 'paid'" class="text-success">Payé</span>
+                                                    <span v-if="invoice.state === 'waiting'" class="text-warning">En attente</span>
+                                                    <span v-if="invoice.state === 'late'" class="text-alternate">En retard</span>
                                                 </div>
                                             </div>
-                                            <span v-if="!invoice.is_paid && !invoice.expired">
-                                                <small>{{ invoice.deadline.d }} jour(s) restant</small>
+                                            <span v-if="invoice.state === 'waiting'">
+                                                <small>{{ invoice.remaining_days }} jour(s) restant</small>
                                             </span>
                                             <span v-if="invoice.expired && !invoice.is_paid">
                                                 <div class="mb-2 mr-2 badge badge-danger">En retard</div>
                                             </span>
                                         </div>
-                                        <div class="badge badge-dark float-right" v-if="invoice.status == 0">Brouillon</div>
+                                        <div class="badge badge-secondary float-center" v-if="invoice.status === 'draft'">Brouillon</div>
+                                        <div class="badge badge-danger float-center" v-if="invoice.state === 'unpaid'">Impayé</div>
                                     </td>
-                                    <td>{{ invoice.user.name }}</td>
+                                    <td>
+                                        <div class="rounded-circle avatar" v-tooltip="`${invoice.user.name} ${invoice.user.firstname}`">
+                                            {{ invoice.user.avatar }}
+                                        </div>
+                                    </td>
                                 </tr>
                                 </tbody>
                                 <tr style="text-align: center;">
@@ -110,28 +159,28 @@
                                     <th>N&deg; de Facture</th>
                                     <th>Intitulé</th>
                                     <th>Client</th>
+                                    <th>Type</th>
                                     <th>Montant</th>
                                     <th>Date</th>
                                     <!--<th>Expire</th>-->
                                     <th>Statut</th>
-                                    <th>Utilisateur</th>
+                                    <th></th>
                                 </tr>
                             </table>
+                            <nav aria-label="Page navigation example">
+                                <ul class="pagination justify-content-end">
+                                    <li class="page-item" v-bind:class="[{disabled: !pagination.prev_page_url}]">
+                                        <a class="page-link" href="javascript:" tabindex="-1" @click="fetchInvoices(pagination.prev_page_url)">Précédent</a>
+                                    </li>
+                                    <li class="page-item disabled"><a class="page-link" href="javascript:">{{ pagination.current_page }}</a></li>
+                                    <!--<li class="page-item"><a class="page-link" href="#!">2</a></li>-->
+                                    <!--<li class="page-item"><a class="page-link" href="#!">3</a></li>-->
+                                    <li class="page-item" v-bind:class="[{disabled: !pagination.next_page_url}]">
+                                        <a class="page-link" href="javascript:" @click="fetchInvoices(pagination.next_page_url)">Suivant</a>
+                                    </li>
+                                </ul>
+                            </nav>
                         </div>
-
-                        <nav aria-label="Page navigation example">
-                            <ul class="pagination justify-content-end">
-                                <li class="page-item" v-bind:class="[{disabled: !pagination.prev_page_url}]">
-                                    <a class="page-link" href="javascript:" tabindex="-1" @click="fetchInvoices(pagination.prev_page_url)">Précédent</a>
-                                </li>
-                                <li class="page-item disabled"><a class="page-link" href="javascript:">{{ pagination.current_page }}</a></li>
-                                <!--<li class="page-item"><a class="page-link" href="#!">2</a></li>-->
-                                <!--<li class="page-item"><a class="page-link" href="#!">3</a></li>-->
-                                <li class="page-item" v-bind:class="[{disabled: !pagination.next_page_url}]">
-                                    <a class="page-link" href="javascript:" @click="fetchInvoices(pagination.next_page_url)">Suivant</a>
-                                </li>
-                            </ul>
-                        </nav>
                     </div>
                 </div>
             </div>
@@ -140,6 +189,8 @@
 </template>
 
 <script>
+    import { Functions } from '../../scripts/functions'
+
     export default {
         mounted() {
             // console.log('Component mounted.')
@@ -147,6 +198,7 @@
 
         data(){
             return{
+                tooltip: 'Test',
                 invoices: [],
                 pagination: {
                     current_page: 1,
@@ -159,7 +211,8 @@
                 description: '',
                 keyword: '',
                 spinner: false,
-                api_token: ''
+                api_token: '',
+                selected: null
 
             }
         },
@@ -225,6 +278,9 @@
 
                 this.pagination = pagination;
             },
+            selectRow(id){
+                this.selected = id
+            },
             create(){
                 window.location = '/invoice/create';
             },
@@ -279,6 +335,69 @@
             },
             progessPercent(min, max){
                 return Math.ceil((min * 100)/max);
+            },
+            convertInvoice(){
+
+            },
+            addRecurrence(){
+
+            },
+            cancelRecurrence(){
+
+            },
+            printInvoice(){
+
+            },
+            sendEmail(){
+
+            },
+            duplicateInvoice(){
+
+            },
+            deleteInvoice(){
+
+            },
+            validateInvoice(invoice){
+                let temp = {...invoice}
+                temp.status = 'validated'
+                this.$swal({
+                    title: "Validation",
+                    text: "Etes-vous sur de vouloir valider cette facture?",
+                    showCancelButton: true,
+                    confirmButtonText: "Valider",
+                    confirmButtonColor: '#28A745',
+                    showLoaderOnConfirm: true,
+                    preConfirm: (login) => {
+                        return fetch(`/api/invoices/${invoice.id}?api_token=${this.api_token}`, {
+                            method: 'PATCH',
+                            body: JSON.stringify(temp),
+                            headers: {
+                                'content-type': 'application/json'
+                            }
+                        })
+                            .then(response => {
+                                if (!response.ok) {
+                                    throw new Error(response.statusText)
+                                }
+                                return response.json()
+                            })
+                            .catch(error => {
+                                this.$swal.showValidationMessage(
+                                    `Request failed: ${error}`
+                                )
+                            })
+                    },
+                    allowOutsideClick: () => !this.$swal.isLoading()
+                }).then((result) => {
+                    if (result.value) {
+                        invoice = {...result.value.data};
+                        let index = this.invoices.findIndex(x => x.id === invoice.id);
+                        if(index !== -1)
+                            this.invoices[index] = {...invoice};
+                        this.$forceUpdate();
+                        Functions.showAlert('top-end', 'success', "Facture validé!")
+                    }
+                })
             }
         }
 

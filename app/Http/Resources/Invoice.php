@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources;
 
+use App\Http\Resources\User as UserResource;
 use Illuminate\Http\Resources\Json\JsonResource;
 use App\Http\Resources\Payment as PaymentResource;
 use App\Http\Resources\Customer as CustomerResource;
@@ -31,18 +32,19 @@ class Invoice extends JsonResource
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
             'customer' => new CustomerResource($this->customer),
-            'user' => $this->user,
+            'user' => new UserResource($this->user),
             'payments' => PaymentResource::collection($this->payments),
             'expire_at' => $this->expire_at,
-            'expired' => $this->expired,
             'taxes' => $this->taxes,
             'items' => $this->items,
-            'deadline' => $this->deadline,
             'status' => $this->status,
-            'is_paid' => $this->is_paid,
             'amount_paid' => $this->amount_paid,
             'amount_remaining' => $this->amount_remaining,
             'recurrence' => new InvoiceRecurrenceResource($this->recurrence),
+            'type' => $this->type,
+            'show_type' => $this->showType,
+            'state' => $this->state,
+            'remaining_days' => $this->remaining_days,
         ];
     }
 }

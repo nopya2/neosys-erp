@@ -132,7 +132,7 @@ class QuoteController extends Controller
                     'amount' => doubleval($el['amount']),
                 ]);
 
-                $quote->items()->attach($item->id);
+                $quote->items()->save($item);
             }
 
             //On affecte les taxes au devis
@@ -224,7 +224,7 @@ class QuoteController extends Controller
         $quote->save();
 
         //On detache d'abord tous les items
-        $quote->items()->detach();
+        $quote->items()->delete();
         //On cree les nouveaux items du devis et on attache au devis
         $items = $request->items;
         foreach ($items as $el){
@@ -239,7 +239,7 @@ class QuoteController extends Controller
                 $item->amount = doubleval($el['amount']);
 
                 $item->save();
-                $quote->items()->attach($item->id);
+                $quote->items()->save($item);
             }else{
                 $item = Item::forceCreate([
                     'label' => $el['label'],
@@ -248,7 +248,7 @@ class QuoteController extends Controller
                     'amount' => doubleval($el['amount']),
                 ]);
 
-                $quote->items()->attach($item->id);
+                $quote->items()->save($item);
             }
         }
 

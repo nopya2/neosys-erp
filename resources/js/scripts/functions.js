@@ -12,7 +12,8 @@ export const Functions = {
             title: title,
             showConfirmButton: false,
             timer: 5000,
-            toast: true
+            toast: true,
+            width: 300
         });
 
     }

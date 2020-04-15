@@ -116,14 +116,18 @@ Route::middleware('auth:api')->get('purchase-orders/{purchase_order}', 'Purchase
 Route::middleware('auth:api')->put('purchase-orders/{purchase_order}', 'PurchaseOrderController@update');
 //Update purchase order by patch
 Route::middleware('auth:api')->patch('purchase-orders/{purchase_order}', 'PurchaseOrderController@changeStatus');
+//Delete quote
+Route::middleware('auth:api')->delete('purchase-orders/{purchase_order}', 'PurchaseOrderController@destroy');
 
 /**** Invoices ****/
 //List invoices
 Route::middleware('auth:api')->get('invoices', 'InvoiceController@index');
 //Create an invoice
 Route::middleware('auth:api')->post('invoice', 'InvoiceController@store');
-//Edit an invoice
+//Update an invoice
 Route::middleware('auth:api')->put('invoice', 'InvoiceController@update');
+//Partially update an invoice
+Route::middleware('auth:api')->patch('invoices/{invoice}', 'InvoiceController@patch');
 //Show an invoice
 Route::middleware('auth:api')->get('invoice/{invoice}', 'InvoiceController@show');
 //Send invoice by email

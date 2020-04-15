@@ -21,9 +21,9 @@
                         <i class="fa fa-calculator icon-gradient bg-mean-fruit">
                         </i>
                     </div>
-                    <div>Devis - Dupliquer
+                    <div>Commande - Dupliquer
                         <div class="page-title-subheading">
-                            Duplication d'un devis existant
+                            Duplication de la commande existante
                         </div>
                     </div>
                 </div>
@@ -44,8 +44,8 @@
             <div class="col-lg-12 col-md-12">
                 <div class="main-card mb-3 card">
                     <div class="card-body">
-                        <quote-form-duplicate :taxes="{{ $taxes }}" :old_quote="{{ $quote }}" :quote_items="{{ $quote->items }}"
-                            :quote_taxes="{{ $quote->taxes }}"></quote-form-duplicate>
+                        <purchase-order-duplicate-form :taxes="{{ $taxes }}" :old_purchase_order="{{ $purchase_order }}" :purchase_order_items="{{ $purchase_order->items }}"
+                            :purchase_order_taxes="{{ $purchase_order->taxes }}"></purchase-order-duplicate-form>
                     </div>
                 </div>
             </div>

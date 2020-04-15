@@ -9,11 +9,10 @@ class Invoice extends Model
 {
     protected $fillable = [
         'id', 'customer_id', 'user_id', 'invoice_number', 'title', 'amount_et', 'discount', 'amount_discount', 'amount', 'amount_taxes'
-        , 'created_at', 'updated_at', 'expire_at', 'expired', 'status'
+        , 'created_at', 'updated_at', 'expire_at', 'status', 'type'
     ];
 
     protected $casts = [
-        'expired' => 'boolean',
         'expire_at' => 'datetime',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
@@ -29,19 +28,19 @@ class Invoice extends Model
         return $this->belongsTo('App\User');
     }
 
-    public function quote()
-    {
-        return $this->belongsTo('App\Quote');
-    }
-
     public function taxes()
     {
         return $this->belongsToMany('App\Tax');
     }
 
+//    public function items()
+//    {
+//        return $this->belongsToMany('App\Item');
+//    }
+
     public function items()
     {
-        return $this->belongsToMany('App\Item');
+        return $this->morphMany('App\Item', 'itemable');
     }
 
     public function payments()
@@ -52,28 +51,6 @@ class Invoice extends Model
     public function recurrence()
     {
         return $this->hasOne('App\InvoiceRecurrence');
-    }
-
-    public function getDeadlineAttribute(){
-
-        $now = new \DateTime();
-        $formatedDate = $now->format('Y-m-d');
-        $interval = $this->expire_at->diff($now);
-
-        return $interval;
-    }
-
-    public function getExpiredAttribute(){
-        if($this->getDeadlineAttribute()->invert == 0){
-            return true;
-        }
-
-        return false;
-    }
-
-    public function getIsPaidAttribute(){
-        if($this->getAmountPaidAttribute() >= $this->amount) return true;
-        return false;
     }
 
     public function getAmountPaidAttribute(){
@@ -89,9 +66,38 @@ class Invoice extends Model
         return $this->amount - $this->getAmountPaidAttribute();
     }
 
-    public function getExpireAtAttribute(){
-        $informations = Functions::informations();
-        return $this->updated_at->add(new \DateInterval('P'.$informations->invoice_delay.'D'));
+    public function getShowTypeAttribute(){
+        switch($this->type){
+            case 'standard':
+                return 'Standard';
+            case 'credit_note':
+                return 'Avoir';
+            case 'deposit':
+                return 'Accompte';
+        }
+    }
+
+    /*
+     * en retard: late
+     * paye: paid
+     * impaye: unpaid
+     * en attente: waiting
+     */
+    public function getStateAttribute(){
+        if($this->getAmountPaidAttribute() >= $this->amount)
+            return 'paid';
+        if($this->getAmountPaidAttribute() <= 0 && $this->expire_at < (new \DateTime()))
+            return 'unpaid';
+        if(($this->getAmountPaidAttribute() > 0 && $this->getAmountPaidAttribute() < $this->amount) && $this->expire_at < (new \DateTime()))
+            return 'late';
+        if(($this->getAmountPaidAttribute() >= 0 && $this->getAmountPaidAttribute() < $this->amount) && $this->expire_at >= (new \DateTime()))
+            return 'waiting';
+    }
+
+    public function getRemainingDaysAttribute(){
+        $diff = date_diff((new \DateTime()), $this->expire_at);
+
+        return intval($diff->format('%a'));
     }
 
 }

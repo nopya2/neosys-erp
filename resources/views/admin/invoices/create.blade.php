@@ -44,7 +44,7 @@
             <div class="col-lg-12 col-md-12">
                 <div class="main-card mb-3 card">
                     <div class="card-body">
-                        <invoice-form :customers="{{ $customers }}" :invoice_number="'{{ $invoice_number }}'" :taxes="{{ $taxes }}"></invoice-form>
+                        <invoice-form :taxes="{{ $taxes }}"></invoice-form>
                     </div>
                 </div>
             </div>

@@ -2,7 +2,9 @@
 
 namespace App\Providers;
 
+use App\Observers\PurchaseOrderObserver;
 use App\Observers\QuoteObserver;
+use App\PurchaseOrder;
 use App\Quote;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\ServiceProvider;
@@ -65,6 +67,8 @@ class AppServiceProvider extends ServiceProvider
             return $numberTransformer->toWords($number);
 //            return "decima";
         });
+
+        PurchaseOrder::observe(PurchaseOrderObserver::class);
 
 
     }

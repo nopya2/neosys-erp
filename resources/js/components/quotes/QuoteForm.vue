@@ -92,7 +92,7 @@
                             </th>
                         </tr>
                         <tr>
-                            <th colspan="3" class="text-right">Montant remisé</th>
+                            <th colspan="3" class="text-right">Net commercial</th>
                             <th colspan="1" class="text-right">
                                 {{ quote.amount_discount | numFormat }}
                             </th>
@@ -156,7 +156,7 @@
 </template>
 
 <script>
-    import { required } from 'vuelidate/lib/validators'
+    import { required, minLength } from 'vuelidate/lib/validators'
     import { Functions } from '../../scripts/functions.js'
 
     export default {
@@ -166,7 +166,11 @@
                 quote: {
                     title: '',
                     customer_id: null,
-                    items: [],
+                    items: [{
+                        label: '',
+                        pu: null,
+                        qty: null
+                    }],
                     taxes: [],
                     amount_et: 0,
                     amount_discount: 0,
@@ -191,6 +195,23 @@
                 },
                 title: {
                     required
+                },
+                items:{
+                    required,
+                    minLength: minLength(1),
+                    $each: {
+                        label: {
+                            required,
+                            minLength: minLength(2)
+                        },
+                        pu: {
+                            required,
+                        },
+                        qty: {
+                            required
+                        }
+
+                    }
                 }
 
             }
@@ -204,7 +225,6 @@
             }
 
             this.csrfToken = document.querySelector('meta[name="csrf-token"]').content
-            this.addItem()
             this.initTaxes()
         },
 

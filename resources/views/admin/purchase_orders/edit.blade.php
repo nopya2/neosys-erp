@@ -47,8 +47,8 @@
             <nav class="" aria-label="breadcrumb">
                 <ol class="breadcrumb">
                     <li class="breadcrumb-item"><a href="{{ route('home') }}">Dashboard</a></li>
-                    <li class="breadcrumb-item"><a href="{{ route('purchase_order.index') }}">Devis</a></li>
-                    <li class="active breadcrumb-item" aria-current="page">Modifier devis [{{ $purchase_order->purchase_order_number }}]</li>
+                    <li class="breadcrumb-item"><a href="{{ route('purchase_order.index') }}">Commandes</a></li>
+                    <li class="active breadcrumb-item" aria-current="page">Modifier commande [{{ $purchase_order->purchase_order_number }}]</li>
                 </ol>
             </nav>
         </div>

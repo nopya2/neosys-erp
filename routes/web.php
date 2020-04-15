@@ -71,6 +71,7 @@ Route::get('/quote/purchase-order/print/{quote}', 'QuoteController@printPurchase
 Route::get('/purchase-orders', 'PurchaseOrderController@home')->name('purchase_order.index')->middleware('auth');
 Route::get('/purchase-order/create', 'PurchaseOrderController@create')->name('purchase_order.create')->middleware('auth');
 Route::get('/purchase-orders/{purchase_order}/edit', 'PurchaseOrderController@edit')->name('purchase_order.edit')->middleware('auth');
+Route::get('/purchase-orders/{purchase_order}/duplicate', 'PurchaseOrderController@duplicate')->name('purchase_order.duplicate')->middleware('auth');
 
 /***** Invoices ****/
 Route::get('/invoices', 'InvoiceController@home')->name('invoice.index')->middleware('auth');
@@ -96,4 +97,6 @@ Route::post('/tax/{tax}/edit', 'TaxController@update')->name('tax.update')->midd
 //Tous les crons
 /* Actualisation des status du devis toutes les 24H00*/
 Route::get('/cron/update-status-quote', 'QuoteController@updateStatusQuote');
+/* Actualisation des status du devis toutes les 24H00*/
+Route::get('/cron/purchase-orders/update-status', 'PurchaseOrderController@updateStatus');
 

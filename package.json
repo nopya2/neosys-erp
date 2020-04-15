@@ -27,6 +27,7 @@
         "@ckeditor/ckeditor5-build-classic": "^17.0.0",
         "@ckeditor/ckeditor5-vue": "^1.0.1",
         "numeral": "^2.0.6",
+        "v-tooltip": "^2.0.3",
         "vue-context": "^5.0.0",
         "vue-filter-date-format": "^1.3.1",
         "vue-filter-number-format": "^2.0.0",

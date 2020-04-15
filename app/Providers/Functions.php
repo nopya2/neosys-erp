@@ -63,30 +63,28 @@ class Functions{
         return 'BC'.substr($tempChar, 2, 6);
     }
 
+    /*
+     * Numerotation de la facture
+     * "FANNEEMOISNUMERO"
+     * F: pour facture
+     * NUMERO: a 5 chiffres
+     */
     public static function generateInvoiceNumber(){
-        $lastInvoice = Invoice::where('invoice_number', 'LIKE', '%%')
+        $year = (new \DateTime())->format('Y');
+        $month = (new \DateTime())->format('m');
+        $indice = 10001;
+        $numberToString = substr(strval($indice), 1);
+
+        $last_invoice = Invoice::where('invoice_number', 'LIKE', '%%')
             ->orderBy('invoice_number', 'desc')
             ->first();
 
-        $lastCreditNote = CreditNote::where('credit_note_number', 'LIKE', '%%')
-            ->orderBy('credit_note_number', 'desc')
-            ->first();
+        if($last_invoice){
+            $number = $indice + intval(substr($last_invoice->invoice_number, 7));
+            $numberToString = substr(strval($number), 1);
+        }
 
-        $number = 0;
-        if($lastInvoice || $lastCreditNote){
-            $number = intval($lastInvoice->invoice_number);
-            if($lastCreditNote){
-                if(intval($lastCreditNote->credit_note_number) > intval($lastCreditNote->invoice_number))
-                    $number = intval($lastCreditNote->credit_note_number);
-            }
-            $temp = 1000000 + $number + 1;
-            $tempChar = strval($temp);
-        }
-        else{
-            $temp = 1000000 + 1;
-            $tempChar = strval($temp);
-        }
-        return $tempChar[1].$tempChar[2].$tempChar[3].$tempChar[4].$tempChar[5].$tempChar[6];
+        return 'F'.$year.$month.$numberToString;
     }
 
     public static function informations(){

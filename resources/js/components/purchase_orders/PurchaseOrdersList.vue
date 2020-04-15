@@ -89,10 +89,10 @@
                                                     <i class="fa fa-print"></i>&nbsp;Imprimer
                                                 </button>
                                                 <div class="dropdown-divider"></div>
-                                                <button type="button" class="dropdown-item" @click="duplicatePurchaseOrder(purchase_order.id)">
+                                                <button type="button" class="dropdown-item" @click="duplicate(purchase_order.id)">
                                                     <i class="fa fa-clone"></i>&nbsp;Dupliquer
                                                 </button>
-                                                <button type="button" class="dropdown-item text-danger" :disabled="purchase_order.status === 'billed'" @click="deletePurchaseOrder(purchase_order.id)">
+                                                <button type="button" class="dropdown-item text-danger" :disabled="purchase_order.status !== 'draft'" @click="deletePurchaseOrder(purchase_order.id)">
                                                     <i class="fa fa-trash"></i>&nbsp;Supprimer
                                                 </button>
                                             </div>
@@ -106,7 +106,7 @@
                                     <td class="text-center">
                                         <div class="mb-2 mr-2 badge badge-info">{{ purchase_order.amount|numFormat }}</div>
                                     </td>
-                                    <td class="text-center">{{ purchase_order.updated_at| moment("DD/MM/YYYY") }}</td>
+                                    <td class="text-center">{{ purchase_order.created_at| moment("DD/MM/YYYY") }}</td>
                                     <td class="text-center">
                                         <span v-if="purchase_order.status === 'draft'">
                                             <div class="mb-2 mr-2 badge badge-dark">Brouillon</div>
@@ -255,13 +255,13 @@
 
                 this.$swal({
                     title: 'Supprimer',
-                    text: 'Etes-vous sur de vouloir supprimer?',
+                    text: 'Etes-vous sur de vouloir supprimer cette commande?',
                     showCancelButton: true,
                     confirmButtonText: 'Supprimer',
                     confirmButtonColor: '#C82333',
                     showLoaderOnConfirm: true,
                     preConfirm: (login) => {
-                        return fetch(`api/purchase-order/${id}?api_token=${this.api_token}`, { method: 'delete' })
+                        return fetch(`/api/purchase-orders/${id}?api_token=${this.api_token}`, { method: 'delete' })
                             .then(response => {
                                 if (!response.ok) {
                                     throw new Error(response.statusText)
@@ -303,7 +303,7 @@
                     }
                 })
             },
-            duplicatePurchaseOrder(id){
+            duplicate(id){
                 this.$swal({
                     title: 'Dupliquer',
                     text: 'Etes-vous sur de vouloir dupliquer cette commande?',
@@ -313,7 +313,7 @@
                     // showLoaderOnConfirm: true,
                 }).then((result) => {
                     if (result.value) {
-                        window.location = `/purchase-order/duplicate/${id}`;
+                        window.location = `/purchase-orders/${id}/duplicate`;
                     }
                 })
             },
@@ -404,7 +404,7 @@
                         if(index !== -1)
                             this.purchase_orders[index] = {...purchaseOrder};
                         this.$forceUpdate();
-                        Functions.showAlert('top-end', 'error', message)
+                        Functions.showAlert('top-end', 'warning', message)
                     }
                 })
             },

@@ -17,6 +17,7 @@ import VueSweetalert2 from 'vue-sweetalert2';
 import 'sweetalert2/dist/sweetalert2.min.css';
 import CKEditor from '@ckeditor/ckeditor5-vue';
 import vSelect from 'vue-select';
+import { VTooltip, VPopover, VClosePopover } from 'v-tooltip'
 
 Vue.use(Vuelidate);
 Vue.use(VueContext);
@@ -30,6 +31,9 @@ Vue.use(VModal, {dynamic: true, injectModalsContainer: true})
 Vue.use(VueSweetalert2);
 Vue.use(require('vue-moment'));
 Vue.use( CKEditor );
+Vue.directive('tooltip', VTooltip)
+Vue.directive('close-popover', VClosePopover)
+Vue.component('v-popover', VPopover)
 
 import  'vue-context/dist/css/vue-context.css';
 import "vue-swatches/dist/vue-swatches.min.css"

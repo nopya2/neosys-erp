@@ -4,7 +4,7 @@
             <div class="col-md-6">
                 <div class="position-relative form-group">
                     <label>Client <i class="fa fa-plus-circle text-success" style="cursor: pointer" @click="addCustomer"></i></label>
-                    <v-select :options="customers" label="company_name" index="id" :filterable="false" @search="onSearch" v-model="$v.quote.customer_id.$model"
+                    <v-select :options="customers" label="company_name" index="id" :filterable="false" @search="onSearch" v-model="$v.purchase_order.customer_id.$model"
                               :reduce="company_name => company_name.id">
                         <template slot="no-options">
                             Aucun client trouvé
@@ -20,14 +20,14 @@
                             </div>
                         </template>
                     </v-select>
-                    <small class="form-text text-danger" v-if="!$v.quote.customer_id.required">Champs requis.</small>
+                    <!--<small class="form-text text-danger" v-if="!$v.purchase_order.customer_id.required">Champs requis.</small>-->
                 </div>
             </div>
             <div class="col-md-6">
                 <div class="position-relative form-group">
-                    <label for="title" class="">Titre du devis</label>
-                    <input name="title" id="title" placeholder="" type="text" class="form-control form-control-sm" v-model="$v.quote.title.$model">
-                    <small class="form-text text-danger" v-if="!$v.quote.title.required">Champs requis.</small>
+                    <label for="title" class="">Titre de la commande</label>
+                    <input name="title" id="title" placeholder="" type="text" class="form-control form-control-sm" v-model="$v.purchase_order.title.$model">
+                    <small class="form-text text-danger" v-if="!$v.purchase_order.title.required">Champs requis.</small>
                 </div>
             </div>
         </div>
@@ -46,7 +46,7 @@
                         </tr>
                         </thead>
                         <tbody>
-                        <tr v-for="(item, index) in quote.items" :key="index">
+                        <tr v-for="(item, index) in purchase_order.items" :key="index">
                             <td>
                                 <textarea class="form-control form-control-sm" type="text" name="label" rows="1" v-model="item.label"></textarea>
                             </td>
@@ -61,7 +61,7 @@
                             </td>
                             <td>
                                 <button class="btn btn-danger btn-sm" @click="removeItem(index)" type="button" title="Retirer l'élément"
-                                        v-if="quote.items.length > 1">
+                                        v-if="purchase_order.items.length > 1">
                                     <i class="fa fa-times-circle"></i>
                                 </button>
                             </td>
@@ -75,18 +75,18 @@
                         </tr>
                         <tr>
                             <th colspan="3" class="text-right">Montant Total HT</th>
-                            <th colspan="1" class="text-right">{{ quote.amount_et | numFormat }}</th>
+                            <th colspan="1" class="text-right">{{ purchase_order.amount_et | numFormat }}</th>
                         </tr>
                         <tr>
                             <th colspan="3" class="text-right">Remise (%)</th>
                             <th colspan="1" class="text-right">
                                 <div class="row">
                                     <div class="col-md-6">
-                                        <input class="form-control" type="number" name="amount" v-model="quote.discount"
+                                        <input class="form-control" type="number" name="amount" v-model="purchase_order.discount"
                                                v-on:input="calculateAmount" max="100" min="0">
                                     </div>
                                     <div class="col-md-6">
-                                        {{ ((quote.amount_et * quote.discount) /100) | numFormat  }}
+                                        {{ ((purchase_order.amount_et * purchase_order.discount) /100) | numFormat  }}
                                     </div>
                                 </div>
                             </th>
@@ -94,7 +94,7 @@
                         <tr>
                             <th colspan="3" class="text-right">Montant remisé</th>
                             <th colspan="1" class="text-right">
-                                {{ quote.amount_discount | numFormat }}
+                                {{ purchase_order.amount_discount | numFormat }}
                             </th>
                         </tr>
                         <tr v-for="tax in selectedTaxes">
@@ -103,7 +103,7 @@
                         </tr>
                         <tr>
                             <th colspan="3" class="text-right">Net à payer</th>
-                            <th colspan="1" class="text-right bg-success text-light">{{ quote.amount | numFormat }}</th>
+                            <th colspan="1" class="text-right bg-success text-light">{{ purchase_order.amount | numFormat }}</th>
                         </tr>
                         </tbody>
                     </table>
@@ -113,7 +113,7 @@
 
         <div class="row">
             <div class="col-md-12">
-                <button type="button" class="mt-2 btn btn-primary" :disabled="$v.quote.$invalid" @click="saveQuote" v-if="!btnLoading">
+                <button type="button" class="mt-2 btn btn-primary" :disabled="$v.purchase_order.$invalid" @click="savePurchaseOrder" v-if="!btnLoading">
                     <i class="fa fa-save"></i> Enregistrer
                 </button>
                 <button class="mt-2 btn btn-primary shadow-2" type="button" disabled="" v-if="btnLoading">
@@ -163,12 +163,12 @@
     import { Functions } from '../../scripts/functions.js'
 
     export default {
-        props : ['taxes', 'old_quote', 'quote_items', 'quote_taxes'],
+        props : ['taxes', 'old_purchase_order', 'purchase_order_items', 'purchase_order_taxes'],
         data(){
             return{
-                quote: {
+                purchase_order: {
                     title: '',
-                    customer_id: null,
+                    // customer_id: null,
                     items: [],
                     taxes: [],
                     amount_et: 0,
@@ -188,7 +188,7 @@
             }
         },
         validations: {
-            quote: {
+            purchase_order: {
                 customer_id: {
                     required
                 },
@@ -207,27 +207,27 @@
             }
 
             this.csrfToken = document.querySelector('meta[name="csrf-token"]').content
-            this.initQuote()
+            this.initPurchaseOrder()
             this.initTaxes()
         },
 
         methods: {
-            initQuote(){
-                this.quote = {
-                    title: this.old_quote.title,
+            initPurchaseOrder(){
+                this.purchase_order = {
+                    title: this.old_purchase_order.title,
                     customer_id: null,
-                    items: [...this.quote_items],
-                    // taxes: [...this.quote_taxes],
-                    amount_et: this.old_quote.amount_et,
-                    amount_discount: this.old_quote.amount_discount,
-                    amount: this.old_quote.amount,
-                    discount: this.old_quote.discount,
-                    amount_taxes: this.old_quote.amount_taxes,
-                    selected_taxes: [...this.quote_taxes]
+                    items: [...this.purchase_order_items],
+                    // taxes: [...this.purchase_order_taxes],
+                    amount_et: this.old_purchase_order.amount_et,
+                    amount_discount: this.old_purchase_order.amount_discount,
+                    amount: this.old_purchase_order.amount,
+                    discount: this.old_purchase_order.discount,
+                    amount_taxes: this.old_purchase_order.amount_taxes,
+                    selected_taxes: [...this.purchase_order_taxes]
                 }
             },
             addItem(){
-                this.quote.items.push({
+                this.purchase_order.items.push({
                     label: '',
                     pu: 0,
                     qty: 0,
@@ -235,15 +235,15 @@
                 })
             },
             removeItem(index){
-                this.quote.items.splice(index, 1)
+                this.purchase_order.items.splice(index, 1)
                 this.calculateAmount()
             },
-            saveQuote(){
+            savePurchaseOrder(){
                 this.btnLoading = true
-                this.quote.selected_taxes = this.selectedTaxes
-                fetch(`/api/quote?api_token=${this.api_token}`, {
+                this.purchase_order.selected_taxes = this.selectedTaxes
+                fetch(`/api/purchase-order?api_token=${this.api_token}`, {
                     method: 'POST',
-                    body: JSON.stringify(this.quote),
+                    body: JSON.stringify(this.purchase_order),
                     headers: {
                         'content-type': 'application/json'
                     }
@@ -253,8 +253,8 @@
                         this.btnLoading = false
                         if (res.ok){
                             res.json().then(result =>{
-                                Functions.showAlert('top-end', 'success', 'Devis enregistré!')
-                                window.location = `/quote/${result.data.id}/edit`
+                                Functions.showAlert('top-end', 'success', 'Commande enregistrée!')
+                                window.location = `/purchase-orders/${result.data.id}/edit`
                             })
 
                         }else{
@@ -303,28 +303,28 @@
                 this.calculateAmount()
             },
             calculateTax(value){
-                // let amountWithdiscount = this.quote.amount_et - this.quote.discount
-                return (this.quote.amount_discount * value)/100
+                // let amountWithdiscount = this.purchase_order.amount_et - this.purchase_order.discount
+                return (this.purchase_order.amount_discount * value)/100
             },
             calculateAmount(){
-                this.quote.amount_et = 0
-                this.quote.amount = 0
-                this.quote.items.forEach(res=>{
-                    this.quote.amount_et += res.amount
+                this.purchase_order.amount_et = 0
+                this.purchase_order.amount = 0
+                this.purchase_order.items.forEach(res=>{
+                    this.purchase_order.amount_et += res.amount
                 })
-                this.quote.amount_discount = this.quote.amount_et - (this.quote.amount_et * this.quote.discount)/100
+                this.purchase_order.amount_discount = this.purchase_order.amount_et - (this.purchase_order.amount_et * this.purchase_order.discount)/100
 
-                this.quote.amount_taxes = 0
+                this.purchase_order.amount_taxes = 0
                 this.selectedTaxes.forEach(item=>{
-                    this.quote.amount_taxes += this.calculateTax(item.value)
+                    this.purchase_order.amount_taxes += this.calculateTax(item.value)
                 })
 
-                this.quote.amount = this.quote.amount_discount + this.quote.amount_taxes
+                this.purchase_order.amount = this.purchase_order.amount_discount + this.purchase_order.amount_taxes
 
 
             },
             addCustomer(){
-                window.open('/customer/create?action=quote', 'customer', "height=600,width=600,modal=yes,alwaysRaised=yes");
+                window.open('/customer/create?action=purchase_order', 'customer', "height=600,width=600,modal=yes,alwaysRaised=yes");
             },
             onSearch(search, loading) {
                 loading(true);

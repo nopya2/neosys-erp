@@ -139,7 +139,7 @@
                             </th>
                         </tr>
                         <tr>
-                            <th colspan="3" class="text-right">Montant remisé</th>
+                            <th colspan="3" class="text-right">Net commercial</th>
                             <th colspan="1" class="text-right">
                                 {{ quote.amount_discount | numFormat }}
                             </th>

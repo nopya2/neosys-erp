@@ -36,7 +36,7 @@ class Quote extends Model
 
     public function items()
     {
-        return $this->belongsToMany('App\Item');
+        return $this->morphMany('App\Item', 'itemable');
     }
 
     public function getDeadlineAttribute(){

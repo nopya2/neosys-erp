@@ -62,7 +62,7 @@
                 <button class="btn btn-dark" disabled>
                     Reste à payer: {{ invoice.amount_remaining | numFormat }}
                 </button>
-                <div class="badge badge-dark float-right" v-if="invoice.status == 0">Brouillon</div>
+                <div class="badge badge-dark float-right" v-if="invoice.status === 'draft'">Brouillon</div>
                 <div class="float-right" v-if="invoice.status == 1 && !invoice.is_paid">
                     <div class="badge badge-success float-right"><i class="fa fa-check-circle"></i>&nbsp;Validé</div><br>
                     <span>
@@ -77,7 +77,7 @@
             <div class="col-md-6">
                 <div class="position-relative form-group">
                     <label for="invoice_number" class="">Numéro de facture</label>
-                    <input name="invoice_number" id="invoice_number" placeholder="" type="text" class="form-control" v-model="$v.invoice.invoice_number.$model" readonly>
+                    <input type="text" class="form-control form-control-sm" name="invoice_number" id="invoice_number" placeholder="" v-model="$v.invoice.invoice_number.$model" readonly>
                     <small class="form-text text-danger" v-if="!$v.invoice.invoice_number.required">Champs requis.</small>
                 </div>
             </div>
@@ -102,9 +102,20 @@
             <div class="col-md-6">
                 <div class="position-relative form-group">
                     <label for="title" class="">Titre de la facture</label>
-                    <input name="title" id="title" placeholder="" type="text" class="form-control" v-model="$v.invoice.title.$model"
+                    <input name="title" id="title" placeholder="" type="text" class="form-control form-control-sm" v-model="$v.invoice.title.$model"
                         :readonly="invoice.is_paid || invoice.status == 1">
                     <small class="form-text text-danger" v-if="!$v.invoice.title.required">Champs requis.</small>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="position-relative form-group">
+                    <label for="title" class="">Type de facture</label>
+                    <select class="form-control form-control-sm" v-model="$v.invoice.type.$model" disabled>
+                        <option value="standard">Standard</option>
+                        <option value="credit_note">Avoir</option>
+                        <option value="deposit">Accompte</option>
+                    </select>
+                    <small class="form-text text-danger" v-if="!$v.invoice.type.required">Champs requis.</small>
                 </div>
             </div>
         </div>
@@ -125,19 +136,19 @@
                         <tbody>
                         <tr v-for="(item, index) in invoice.items" :key="index">
                             <td>
-                                <textarea class="form-control" type="text" name="label" rows="1" v-model="item.label" :title="item.label"
+                                <textarea class="form-control form-control-sm" type="text" name="label" rows="1" v-model="item.label" :title="item.label"
                                       :readonly="invoice.is_paid || invoice.status == 1"></textarea>
                             </td>
                             <td>
-                                <input class="form-control" type="number" name="pu" v-model="item.pu" v-on:input="editItem(item)"
+                                <input class="form-control form-control-sm" type="number" name="pu" v-model="item.pu" v-on:input="editItem(item)"
                                    :readonly="invoice.is_paid || invoice.status == 1">
                             </td>
                             <td>
-                                <input class="form-control" type="number" name="qty" v-model="item.qty" v-on:input="editItem(item)"
+                                <input class="form-control form-control-sm" type="number" name="qty" v-model="item.qty" v-on:input="editItem(item)"
                                    :readonly="invoice.is_paid || invoice.status == 1">
                             </td>
                             <td>
-                                <input class="form-control" type="number" name="amount" readonly v-model="item.amount">
+                                <input class="form-control form-control-sm" type="number" name="amount" readonly v-model="item.amount">
                             </td>
                             <td>
                                 <button class="btn btn-danger btn-sm" @click="removeItem(index)" type="button" title="Retirer l'élément"
@@ -163,7 +174,7 @@
                             <th colspan="1" class="text-right">
                                 <div class="row">
                                     <div class="col-md-6">
-                                        <input class="form-control" type="number" name="amount" v-model="invoice.discount"
+                                        <input class="form-control form-control-sm" type="number" name="amount" v-model="invoice.discount"
                                            v-on:input="calculateAmount" max="100" min="0" :readonly="invoice.is_paid || invoice.status == 1">
                                     </div>
                                     <div class="col-md-6">
@@ -173,7 +184,7 @@
                             </th>
                         </tr>
                         <tr>
-                            <th colspan="3" class="text-right">Montant remisé</th>
+                            <th colspan="3" class="text-right">Net commercial</th>
                             <th colspan="1" class="text-right">
                                 {{ invoice.amount_discount | numFormat }}
                             </th>
@@ -192,7 +203,7 @@
             </div>
         </div>
 
-        <div class="row" v-if="!invoice.is_paid && invoice.status == 0">
+        <div class="row" v-if="invoice.status === 'draft'">
             <div class="col-md-12">
                 <button type="button" class="mt-2 btn btn-primary" :disabled="$v.invoice.$invalid" @click="saveInvoice" v-if="!btnLoading">
                     <i class="fa fa-save"></i> Enregistrer
@@ -385,9 +396,10 @@
 </template>
 
 <script>
-    import { required, minValue, maxValue } from 'vuelidate/lib/validators';
+    import { required, minValue, maxValue, minLength } from 'vuelidate/lib/validators';
     import Datepicker from 'vuejs-datepicker';
     import {en, es, fr} from 'vuejs-datepicker/dist/locale'
+    import { Functions } from '../../scripts/functions.js'
 
     export default {
         props : ['customers', 'taxes', 'old_invoice', 'invoice_items', 'invoice_taxes', 'action', 'payment_methods'],
@@ -401,7 +413,11 @@
                     invoice_number: '',
                     title: '',
                     customer_id: '',
-                    items: [],
+                    items: [{
+                        label: '',
+                        pu: null,
+                        qty: null
+                    }],
                     taxes: [],
                     amount_et: 0,
                     amount_discount: 0,
@@ -415,7 +431,9 @@
                     amount_remaining: 0,
                     is_paid: null,
                     customer: {},
-                    deadline: {}
+                    deadline: {},
+                    type: '',
+                    status: '',
                 },
                 documents: [],
                 payment: {
@@ -447,6 +465,26 @@
                     required
                 },
                 title: {
+                    required
+                },
+                items:{
+                    required,
+                    minLength: minLength(1),
+                    $each: {
+                        label: {
+                            required,
+                            minLength: minLength(2)
+                        },
+                        pu: {
+                            required,
+                        },
+                        qty: {
+                            required
+                        }
+
+                    }
+                },
+                type: {
                     required
                 }
 
@@ -520,11 +558,8 @@
                 this.invoice.items.push({
                     id: 0,
                     label: '',
-                    pu: 0,
-                    qty: 0,
-                    amount: 0,
-                    created_at: '',
-                    updated_at: ''
+                    pu: '',
+                    qty: '',
                 })
                 this.calculateAmount()
             },
@@ -533,7 +568,7 @@
                 this.calculateAmount()
             },
             saveInvoice(){
-                this.spinner = true
+                this.btnLoading = true
                 this.invoice.selected_taxes = this.selectedTaxes
                 fetch(`/api/invoice?api_token=${this.api_token}`, {
                     method: 'PUT',
@@ -542,29 +577,25 @@
                         'content-type': 'application/json'
                     }
                 })
-                    .then(res => res.json())
+                    // .then(res => res.json())
                     .then(res => {
-                        this.spinner = false
+                        this.btnLoading = false
                         this.invoice = res.data;
-                        this.$swal({
-                            position: 'top-end',
-                            icon: 'success',
-                            title: 'Facture enregistrée!',
-                            showConfirmButton: false,
-                            timer: 5000,
-                            toast: true
-                        })
+                        if(res.ok){
+                            res.json().then(result =>{
+                                Functions.showAlert('top-end', 'success', 'Facture enregistrée!')
+                                this.invoice = result.data
+                            })
+                        }else{
+                            res.json().then(error =>{
+                                Functions.showAlert('top-end', 'error', error.message)
+                                console.log(error)
+                            })
+                        }
                     })
                     .catch(error => {
-                        this.spinner = false
-                        this.$swal({
-                            position: 'top-end',
-                            icon: 'error',
-                            title: 'Erreur traitement!',
-                            showConfirmButton: false,
-                            timer: 5000,
-                            toast: true
-                        })
+                        this.btnLoading = false
+                        Functions.showAlert('top-end', 'error', 'Erreur traitement!')
                     });
             },
             editItem(item){

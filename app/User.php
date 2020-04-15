@@ -67,4 +67,8 @@ class User extends Authenticatable
         return strtoupper($name) . " " . ucfirst($firstname);
     }
 
+    public function getAvatarAttribute(){
+        return strtoupper(substr($this->name, 0, 1)).strtoupper(substr($this->firstname, 0, 1));
+    }
+
 }

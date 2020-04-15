@@ -13,6 +13,8 @@ use App\PaymentMethod;
 use App\Information;
 use App\Providers\Functions;
 use App\Tax;
+use Exception;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
@@ -22,6 +24,13 @@ use PDF;
 
 class InvoiceController extends Controller
 {
+    protected $informationApp;
+
+    public function __construct()
+    {
+        $this->informationApp = Information::find(1);
+    }
+
     public function home()
     {
         return view('admin.invoices.index', [
@@ -89,22 +98,14 @@ class InvoiceController extends Controller
      */
     public function create()
     {
-        $customers = Customer::where('company_name', 'LIKE', '%%')
-            ->orderBy('company_name', 'asc')
-            ->get();
-
         $taxes = Tax::where('name', 'LIKE', '%%')
             ->orderBy('name', 'asc')
             ->get();
 
-        $invoiceNumber = Functions::generateInvoiceNumber();
-
         return view('admin.invoices.create', [
             'page' => 'invoice',
             'sub_page' => 'invoice.list',
-            'customers' => $customers,
             'taxes' => $taxes,
-            'invoice_number' => $invoiceNumber
         ]);
     }
 
@@ -118,56 +119,55 @@ class InvoiceController extends Controller
     {
         $currentUser = Auth::user();
 
-        $data = $request->validate([
-            'invoice_number' => ['required'],
-            'title' => ['required'],
-            'customer_id' => ['required'],
-            'amount_et' => ['required'],
-            'amount_discount' => ['required'],
-            'amount' => ['required'],
-            'discount' => ['required'],
-            'amount_taxes' => ['required'],
-        ]);
-
-        $currentDate = new \DateTime();
-//        $expireAt = $currentDate->add(new \DateInterval('P30D'));
-
-        //On cree d'abord la facture
-        $invoice = Invoice::forceCreate([
-            'customer_id' => $data['customer_id'],
-            'user_id' => $currentUser->id,
-            'invoice_number' => $data['invoice_number'],
-            'title' => $data['title'],
-            'amount_et' => $data['amount_et'],
-            'discount' => $data['discount'],
-            'amount_discount' => $data['amount_discount'],
-            'amount_taxes' => $data['amount_taxes'],
-            'amount' => $data['amount'],
-            'created_at' => $currentDate->format('Y-m-d'),
-            'updated_at' => $currentDate,
-//            'expire_at' => $expireAt,
-            'expired' => false,
-            'status' => 0
-        ]);
-
-        //On cree les items du devis et on attache au devis
-        $items = $request->items;
-        foreach ($items as $el){
-            $item = Item::forceCreate([
-                'label' => $el['label'],
-                'pu' => doubleval($el['pu']),
-                'qty' => intval($el['qty']),
-                'amount' => doubleval($el['amount']),
+        try{
+            $data = $request->validate([
+                'title' => ['required'],
+                'customer_id' => ['required'],
+                'amount_et' => ['required'],
+                'amount_discount' => ['required'],
+                'amount' => ['required'],
+                'discount' => ['required'],
+                'amount_taxes' => ['required'],
             ]);
 
-            $invoice->items()->attach($item->id);
+            //On cree d'abord la facture
+            $invoice = Invoice::forceCreate([
+                'customer_id' => $data['customer_id'],
+                'user_id' => $currentUser->id,
+                'invoice_number' => Functions::generateInvoiceNumber(),
+                'title' => $data['title'],
+                'amount_et' => $data['amount_et'],
+                'discount' => $data['discount'],
+                'amount_discount' => $data['amount_discount'],
+                'amount_taxes' => $data['amount_taxes'],
+                'amount' => $data['amount'],
+                'created_at' => new \DateTime(),
+                'updated_at' => new \DateTime(),
+                'expire_at' => (new \DateTime())->add(new \DateInterval('P'.$this->informationApp->invoice_delay.'D')),
+            ]);
+
+            //On cree les items de la facture et on attache a la facture
+            $items = $request->items;
+            foreach ($items as $el){
+                $item = Item::forceCreate([
+                    'label' => $el['label'],
+                    'pu' => doubleval($el['pu']),
+                    'qty' => intval($el['qty']),
+                    'amount' => doubleval($el['amount']),
+                ]);
+
+                $invoice->items()->save($item);
+            }
+
+            //On affecte les taxes au a la facture
+            $taxes = $request->selected_taxes;
+            foreach ($taxes as $el){
+                $invoice->taxes()->attach($el['id']);
+            }
+        }catch (Exception $ex){
+            return new JsonResponse(['message'=>$ex->getMessage()], 400);
         }
 
-        //On affecte les taxes au devis
-        $taxes = $request->selected_taxes;
-        foreach ($taxes as $el){
-            $invoice->taxes()->attach($el['id']);
-        }
 
         return new InvoiceResource($invoice);
     }
@@ -195,10 +195,6 @@ class InvoiceController extends Controller
     {
         $invoice = Invoice::findOrFail($invoice);
 
-        $customers = Customer::where('company_name', 'LIKE', '%%')
-            ->orderBy('company_name', 'asc')
-            ->get();
-
         $taxes = Tax::where('name', 'LIKE', '%%')
             ->orderBy('name', 'asc')
             ->get();
@@ -211,7 +207,6 @@ class InvoiceController extends Controller
             'invoice' => $invoice,
             'page' => 'invoice',
             'sub_page' => 'invoice.list',
-            'customers' => $customers,
             'taxes' => $taxes,
             'payment_methods' => $methods
         ]);
@@ -228,71 +223,104 @@ class InvoiceController extends Controller
     {
         $invoice = Invoice::findOrFail($request->id);
 
-        $data = $request->validate([
-            'invoice_number' => ['required'],
-            'title' => ['required'],
-            'customer_id' => ['required'],
-            'amount_et' => ['required'],
-            'amount_discount' => ['required'],
-            'amount' => ['required'],
-            'discount' => ['required'],
-            'amount_taxes' => ['required'],
-        ]);
+        try{
+            $data = $request->validate([
+                'invoice_number' => ['required'],
+                'title' => ['required'],
+                'customer_id' => ['required'],
+                'amount_et' => ['required'],
+                'amount_discount' => ['required'],
+                'amount' => ['required'],
+                'discount' => ['required'],
+                'amount_taxes' => ['required'],
+            ]);
 
-        $currentDate = new \DateTime();
+            $invoice->title = $request->title;
+            $invoice->amount_et = $request->amount_et;
+            $invoice->discount = $request->discount;
+            $invoice->amount_discount = $request->amount_discount;
+            $invoice->amount_taxes = $request->amount_taxes;
+            $invoice->amount = $request->amount;
+            $invoice->updated_at = new \DateTime();
+            $invoice->expire_at = (new \DateTime())->add(new \DateInterval('P'.$this->informationApp->invoice_delay.'D'));
+            $invoice->status = $request->status;
 
-        $invoice->title = $request->title;
-        $invoice->amount_et = $request->amount_et;
-        $invoice->discount = $request->discount;
-        $invoice->amount_discount = $request->amount_discount;
-        $invoice->amount_taxes = $request->amount_taxes;
-        $invoice->amount = $request->amount;
-        $invoice->updated_at = $currentDate;
-        $invoice->status = $request->status;
+            $invoice->save();
 
-//        if($request->action === 'reedit'){
-//            $expireAt = $currentDate->add(new \DateInterval('P30D'));
-//            $quote->expire_at = $expireAt;
-//        }
+            //On detache d'abord tous les items
+            $invoice->items()->delete();
+            //On cree les nouveaux items de la facture et on attache au devis
+            $items = $request->items;
+            foreach ($items as $el){
+                //On verifie d'abord si l'id de l'item existe
+                //Si il existe, on modifie les informations
+                //Si il n'existe pas on cree de nouveaux items
+                $item = Item::find($el['id']);
+                if(!empty($item)){
+                    $item->label = $el['label'];
+                    $item->pu = doubleval($el['pu']);
+                    $item->qty = intval($el['qty']);
+                    $item->amount = doubleval($el['amount']);
 
-        $invoice->save();
+                    $item->save();
+                    $invoice->items()->save($item);
+                }else{
+                    $item = Item::forceCreate([
+                        'label' => $el['label'],
+                        'pu' => doubleval($el['pu']),
+                        'qty' => intval($el['qty']),
+                        'amount' => doubleval($el['amount']),
+                    ]);
 
-        //On detache d'abord tous les items
-        $invoice->items()->detach();
-        //On cree les nouveaux items de la facture et on attache au devis
-        $items = $request->items;
-        foreach ($items as $el){
-            //On verifie d'abord si l'id de l'item existe
-            //Si il existe, on modifie les informations
-            //Si il n'existe pas on cree de nouveaux items
-            $item = Item::find($el['id']);
-            if(!empty($item)){
-                $item->label = $el['label'];
-                $item->pu = doubleval($el['pu']);
-                $item->qty = intval($el['qty']);
-                $item->amount = doubleval($el['amount']);
-
-                $item->save();
-                $invoice->items()->attach($item->id);
-            }else{
-                $item = Item::forceCreate([
-                    'label' => $el['label'],
-                    'pu' => doubleval($el['pu']),
-                    'qty' => intval($el['qty']),
-                    'amount' => doubleval($el['amount']),
-                ]);
-
-                $invoice->items()->attach($item->id);
+                    $invoice->items()->save($item);
+                }
             }
+
+            //On affecte les taxes au devis
+            $taxes = $request->selected_taxes;
+            //On retire dabord toutes les taxes
+            $invoice->taxes()->detach();
+            //Ensuite on les ajoute
+            foreach ($taxes as $el){
+                $invoice->taxes()->attach($el['id']);
+            }
+
+        }catch (Exception $ex){
+            return new JsonResponse(['message' => $ex->getMessage()], 400);
         }
 
-        //On affecte les taxes au devis
-        $taxes = $request->selected_taxes;
-        //On retire dabord toutes les taxes
-        $invoice->taxes()->detach();
-        //Ensuite on les ajoute
-        foreach ($taxes as $el){
-            $invoice->taxes()->attach($el['id']);
+        return new InvoiceResource($invoice);
+    }
+
+    public function patch(Request $request)
+    {
+        $invoice = Invoice::findOrFail($request->id);
+
+        try{
+            $data = $request->validate([
+                'invoice_number' => ['required'],
+                'title' => ['required'],
+                'customer_id' => ['required'],
+                'amount_et' => ['required'],
+                'amount_discount' => ['required'],
+                'amount' => ['required'],
+                'discount' => ['required'],
+                'amount_taxes' => ['required'],
+            ]);
+
+            $invoice->title = $request->title;
+            $invoice->amount_et = $request->amount_et;
+            $invoice->discount = $request->discount;
+            $invoice->amount_discount = $request->amount_discount;
+            $invoice->amount_taxes = $request->amount_taxes;
+            $invoice->amount = $request->amount;
+            $invoice->updated_at = new \DateTime();
+            $invoice->expire_at = (new \DateTime())->add(new \DateInterval('P'.$this->informationApp->invoice_delay.'D'));
+            $invoice->status = $request->status;
+
+            $invoice->save();
+        }catch (Exception $ex){
+            return new JsonResponse(['message' => $ex->getMessage()], 400);
         }
 
         return new InvoiceResource($invoice);

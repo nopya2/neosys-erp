@@ -21,9 +21,9 @@
                         <i class="fa fa-calculator icon-gradient bg-mean-fruit">
                         </i>
                     </div>
-                    <div>Bon de commande - Nouveau
+                    <div>Commande - Nouvelle
                         <div class="page-title-subheading">
-                            Edition d'un nouveau bon de commande
+                            Edition d'une nouvelle commande
                         </div>
                     </div>
                 </div>
