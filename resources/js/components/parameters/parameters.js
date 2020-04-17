@@ -4,6 +4,11 @@ Vue.component(
     require('./PaymentMethodsList.vue').default
 );
 
+Vue.component(
+    'emails',
+    require('./Emails.vue').default
+)
+
 // Vue.component(
 //     'invoice-form',
 //     require('./InvoiceForm.vue').default

@@ -50,6 +50,7 @@ require('./components/taxes/taxes');
 require('./components/parameters/parameters');
 require('./components/credit_notes/credit_notes');
 require('./components/purchase_orders/purchase_orders');
+require('./components/directives/directives')
 
 Vue.component('example-component', require('./components/ExampleComponent.vue').default);
 Vue.component('login-component', require('./components/LoginComponent.vue').default);

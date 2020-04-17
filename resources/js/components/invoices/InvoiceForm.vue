@@ -1,6 +1,6 @@
 <template>
     <form class="">
-        <div class="form-row">
+        <div class="row">
             <div class="col-md-6">
                 <div class="position-relative form-group">
                     <label>Client <i class="fa fa-plus-circle text-success" style="cursor: pointer" @click="addCustomer"></i></label>
@@ -30,17 +30,18 @@
                     <small class="form-text text-danger" v-if="!$v.invoice.title.required">Champs requis.</small>
                 </div>
             </div>
-            <!--<div class="col-md-6">-->
-                <!--<div class="position-relative form-group">-->
-                    <!--<label class="">Type de facture</label>-->
-                    <!--<select class="form-control form-control-sm" v-model="$v.invoice.type.$model">-->
-                        <!--<option value="standard">Standard</option>-->
-                        <!--<option value="credit_note">Avoir</option>-->
-                        <!--<option value="deposit">Accompte</option>-->
-                    <!--</select>-->
-                    <!--<small class="form-text text-danger" v-if="!$v.invoice.type.required">Champs requis.</small>-->
-                <!--</div>-->
-            <!--</div>-->
+        </div>
+        <div class="row">
+            <div class="col-md-6">
+                <div class="position-relative form-group">
+                    <label class="">Mode de règlement</label>
+                    <select class="form-control form-control-sm" v-model="$v.invoice.payment_method_id.$model">
+                        <option value="">Selectionnez un mode de reglement</option>
+                        <option :value="method.id" v-for="method in payment_methods">{{ method.name }}</option>
+                    </select>
+                    <small class="form-text text-danger" v-if="!$v.invoice.payment_method_id.required">Champs requis.</small>
+                </div>
+            </div>
         </div>
 
         <div class="row mt-3">
@@ -131,6 +132,9 @@
                     <span class="spinner-grow spinner-grow-sm" role="status"></span>
                     Traitement en cours
                 </button>
+                <button class="mt-2 btn btn-danger" type="button" :disabled="btnLoading" v-if="action != 'create'" onclick="window.history.back()">
+                    Annuler
+                </button>
                 <button type="button" class="mt-2 btn btn-secondary" @click="selectTaxes">
                     Sélection des taxes
                 </button>
@@ -171,13 +175,13 @@
     import { Functions } from '../../scripts/functions.js'
 
     export default {
-        props : ['invoice_number', 'taxes'],
+        props : ['taxes', 'payment_methods', 'invoice_info', 'invoice_items', 'invoice_taxes', 'list_customers', 'action'],
         data(){
             return{
                 invoice: {
-                    invoice_number: '',
                     title: '',
                     customer_id: '',
+                    payment_method_id: '',
                     items: [{
                         label: '',
                         pu: '',
@@ -228,6 +232,9 @@
                 },
                 type: {
                     required
+                },
+                payment_method_id: {
+                    required
                 }
             }
         },
@@ -240,12 +247,31 @@
             }
 
             this.csrfToken = document.querySelector('meta[name="csrf-token"]').content
-
-            this.invoice.invoice_number = this.invoice_number
+            if(this.action != 'create'){
+                this.initInvoice()
+                this.customers = this.list_customers
+            }
             this.initTaxes()
         },
 
         methods: {
+            initInvoice(){
+                this.invoice = {
+                    title: this.invoice_info.title,
+                    customer_id: this.invoice_info.customer_id,
+                    payment_method_id: this.invoice_info.payment_method_id,
+                    items: [...this.invoice_items],
+                    // taxes: [...this.invoice_taxes],
+                    amount_et: this.invoice_info.amount_et,
+                    amount_discount: this.invoice_info.amount_discount,
+                    amount: this.invoice_info.amount,
+                    discount: this.invoice_info.discount,
+                    amount_taxes: this.invoice_info.amount_taxes,
+                    type: this.invoice_info.type,
+                    selected_taxes: [...this.invoice_taxes]
+
+                }
+            },
             addItem(){
                 this.invoice.items.push({
                     label: '',

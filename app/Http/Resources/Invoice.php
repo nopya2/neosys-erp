@@ -21,6 +21,7 @@ class Invoice extends JsonResource
         return [
             'id' => $this->id,
             'customer_id' => $this->customer_id,
+            'payment_method_id' => $this->payment_method_id,
             'user_id' => $this->user_id,
             'invoice_number' => $this->invoice_number,
             'title' => $this->title,
@@ -45,6 +46,7 @@ class Invoice extends JsonResource
             'show_type' => $this->showType,
             'state' => $this->state,
             'remaining_days' => $this->remaining_days,
+            'payment_method' => $this->payment_method
         ];
     }
 }

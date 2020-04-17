@@ -3,8 +3,61 @@
     font-weight: bold;
     padding: 5px;
     height: auto;
-    width: auto;
+    width: 30px;
     border-radius: 50%;
     background: #633E71;
     color: white;
+    text-align: center;
+}
+
+table.table-cursor thead tr, table.table-cursor tfoot tr{
+    background: #FAFAFA;
+}
+
+table.table-cursor thead tr:hover, table.table-cursor tfoot tr:hover{
+    cursor: pointer;
+}
+
+table.table-cursor tbody tr:hover{
+    cursor: pointer;
+    background: #E0F3FF;
+}
+
+.bg-selected{
+    background: #E0F3FF;
+}
+
+/** Customize vue-js datepicker **/
+/*.cell{*/
+    /*width: 12.8571428571%;*/
+    /*height: 30px;*/
+    /*line-height: 30px;*/
+/*}*/
+
+.vdp-datepicker__calendar .cell {
+    display: inline-block;
+    padding: 0 5px;
+    /*width: 14.285714285714286%;*/
+    width: 12.8571428571%;
+    height: 30px;
+    line-height: 30px;
+    text-align: center;
+    vertical-align: middle;
+    border: 1px solid transparent;
+}
+
+/*** Parameters ***/
+
+._w_parameters_containers {
+    border: 1px solid #dedede;
+    margin-bottom: 2em!important;
+}
+._w_parameters_headers {
+    background: #f9f9f9;
+    font-size: 14px;
+    padding: 14px 20px;
+    color: #495057;
+}
+._w_parameters_content {
+    padding: 1.5em;
 }

@@ -43,6 +43,10 @@
             <div class="col-md-6">
                 <payment-methods-list></payment-methods-list>
             </div>
+
+            <div class="col-md-6">
+                <emails></emails>
+            </div>
         </div>
 
 

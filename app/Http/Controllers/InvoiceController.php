@@ -46,45 +46,29 @@ class InvoiceController extends Controller
      */
     public function index(Request $request)
     {
-        $invoices = Invoice::where('invoice_number', 'LIKE', '%' . $request->keyword . '%')
-            ->orWhere(function ($query) use ($request){
+        $order = $request->order;
+        $sort = $request->sort;
+        $start = $request->start.' 00:00:00';
+        $end = $request->end.' 23:59:59';
+
+        $invoices = Invoice::where(function ($query) use ($request){
                 $query
-                    ->whereHas('customer', function ($query) use ($request){
+                    ->where('invoice_number', 'LIKE', '%'.$request->keyword.'%')
+                    ->orWhere('title', 'LIKE', '%'.$request->keyword.'%')
+                    ->orWhereHas('customer', function ($query) use ($request){
                         $query
                             ->where('company_name', 'LIKE', '%' . $request->keyword . '%');
-                    })
-                    ->orWhere('title', 'LIKE', '%' . $request->keyword . '%');
+                    });
             })
-            ->orderBy('id', 'desc')
+            ->where('type', 'LIKE', '%'.$request->type.'%')
+            ->whereBetween('updated_at', [$start, $end])
+            ->orderBy($sort, $order)
             ->get();
 
-        if($request->status !== '0'){
-            switch($request->status){
-                case '1':
-                    //Facture brouillon
-                    $invoices = $invoices->filter(function ($invoice) {
-                        return $invoice->status == 0;
-                    });
-                    break;
-                case '2':
-                    //Facture en retard
-                    $invoices = $invoices->filter(function ($invoice) {
-                        return $invoice->status == 1 && $invoice->is_paid == false && $invoice->expired == true;
-                    });
-                    break;
-                case '3':
-                    //Facture en cours
-                    $invoices = $invoices->filter(function ($invoice) {
-                        return $invoice->status == 1 && $invoice->is_paid == false && $invoice->expired == false;
-                    });
-                    break;
-                case '4':
-                    //Facture en cours
-                    $invoices = $invoices->filter(function ($invoice) {
-                        return $invoice->is_paid == true;
-                    });
-                    break;
-            }
+        if($request->status !== null){
+            $invoices = $invoices->filter(function ($invoice) use ($request){
+                return $invoice->state === $request->status;
+            });
         }
 
 
@@ -96,16 +80,34 @@ class InvoiceController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function create()
+    public function create(Request $request)
     {
+        $invoice = new Invoice();
+
+        $action = 'create';
+        if($request->has('action') && $request->has('i')){
+            $action = $request->action;
+            $invoice = Invoice::find($request->i);
+        }
         $taxes = Tax::where('name', 'LIKE', '%%')
             ->orderBy('name', 'asc')
             ->get();
+
+        $customers = Customer::where('company_name', 'LIKE', '%%')
+            ->orderBy('company_name', 'asc')
+            ->limit(15)
+            ->get();
+
+        $paymentMethods = PaymentMethod::all();
 
         return view('admin.invoices.create', [
             'page' => 'invoice',
             'sub_page' => 'invoice.list',
             'taxes' => $taxes,
+            'payment_methods' => $paymentMethods,
+            'action' => $action,
+            'invoice' => $invoice,
+            'customers' => $customers
         ]);
     }
 
@@ -118,11 +120,27 @@ class InvoiceController extends Controller
     public function store(Request $request)
     {
         $currentUser = Auth::user();
+        //On definit le type de facture
+        //On initialise les taxes
+        //en fonction du parametre d'url 'action'
+        //la facture reference si c'est un avoir
+        $type = 'standard';
+        $parentId = null;
+        if($request->has('action')){
+            if($request->action === 'convert'){
+                $taxes = $request->taxes;
+                $type = 'credit_note';
+                $parentId = $request->id;
+            }
+        }else{
+            $taxes = $request->selected_taxes;
+        }
 
         try{
             $data = $request->validate([
                 'title' => ['required'],
                 'customer_id' => ['required'],
+                'payment_method_id' => ['required'],
                 'amount_et' => ['required'],
                 'amount_discount' => ['required'],
                 'amount' => ['required'],
@@ -134,6 +152,7 @@ class InvoiceController extends Controller
             $invoice = Invoice::forceCreate([
                 'customer_id' => $data['customer_id'],
                 'user_id' => $currentUser->id,
+                'payment_method_id' => $data['payment_method_id'],
                 'invoice_number' => Functions::generateInvoiceNumber(),
                 'title' => $data['title'],
                 'amount_et' => $data['amount_et'],
@@ -144,6 +163,8 @@ class InvoiceController extends Controller
                 'created_at' => new \DateTime(),
                 'updated_at' => new \DateTime(),
                 'expire_at' => (new \DateTime())->add(new \DateInterval('P'.$this->informationApp->invoice_delay.'D')),
+                'type' => $type,
+                'parent_id' => $parentId
             ]);
 
             //On cree les items de la facture et on attache a la facture
@@ -159,13 +180,12 @@ class InvoiceController extends Controller
                 $invoice->items()->save($item);
             }
 
-            //On affecte les taxes au a la facture
-            $taxes = $request->selected_taxes;
+            //On affecte les taxes a la facture
             foreach ($taxes as $el){
                 $invoice->taxes()->attach($el['id']);
             }
         }catch (Exception $ex){
-            return new JsonResponse(['message'=>$ex->getMessage()], 400);
+            return new JsonResponse($ex, 400);
         }
 
 
@@ -199,16 +219,14 @@ class InvoiceController extends Controller
             ->orderBy('name', 'asc')
             ->get();
 
-        $methods = PaymentMethod::where('name', 'LIKE', '%%')
-            ->orderBy('name', 'asc')
-            ->get();
+        $paymentMethods = PaymentMethod::all();
 
         return view('admin.invoices.edit', [
             'invoice' => $invoice,
             'page' => 'invoice',
             'sub_page' => 'invoice.list',
             'taxes' => $taxes,
-            'payment_methods' => $methods
+            'payment_methods' => $paymentMethods
         ]);
     }
 
@@ -228,6 +246,7 @@ class InvoiceController extends Controller
                 'invoice_number' => ['required'],
                 'title' => ['required'],
                 'customer_id' => ['required'],
+                'payment_method_id' => ['required'],
                 'amount_et' => ['required'],
                 'amount_discount' => ['required'],
                 'amount' => ['required'],
@@ -235,6 +254,7 @@ class InvoiceController extends Controller
                 'amount_taxes' => ['required'],
             ]);
 
+            $invoice->payment_method_id = $request->payment_method_id;
             $invoice->title = $request->title;
             $invoice->amount_et = $request->amount_et;
             $invoice->discount = $request->discount;
@@ -382,8 +402,6 @@ class InvoiceController extends Controller
         $oldInvoice = Invoice::find($invoice);
         $currentUser = Auth::user();
 
-        $currentDate = new \DateTime();
-
         //On cree d'abord la facture
         $invoice = Invoice::forceCreate([
             'customer_id' => $oldInvoice->customer_id,
@@ -395,13 +413,12 @@ class InvoiceController extends Controller
             'amount_discount' => $oldInvoice->amount_discount,
             'amount_taxes' => $oldInvoice->amount_taxes,
             'amount' => $oldInvoice->amount,
-            'created_at' => $currentDate->format('Y-m-d'),
-            'updated_at' => $currentDate,
-            'expired' => false,
-            'status' => 0
+            'created_at' => new \DateTime(),
+            'updated_at' => new \DateTime(),
+            'expire_at' => (new \DateTime())->add(new \DateInterval('P'.$this->informationApp->invoice_delay.'D')),
         ]);
 
-        //On cree les items du devis et on attache au devis
+        //On cree les items de la facture et on attache a la facture
         $items = $oldInvoice->items;
         foreach ($items as $el){
             $item = Item::forceCreate([
@@ -411,10 +428,10 @@ class InvoiceController extends Controller
                 'amount' => doubleval($el['amount']),
             ]);
 
-            $invoice->items()->attach($item->id);
+            $invoice->items()->save($item);
         }
 
-        //On affecte les taxes au devis
+        //On affecte les taxes a la facture
         $taxes = $oldInvoice->taxes;
         foreach ($taxes as $el){
             $invoice->taxes()->attach($el['id']);

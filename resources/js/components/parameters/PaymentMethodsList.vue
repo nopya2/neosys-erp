@@ -14,7 +14,7 @@
             <table class="mb-0 table table-striped">
                 <thead>
                 <tr>
-                    <th>#</th>
+                    <!--<th>#</th>-->
                     <th>Intitulé</th>
                     <th></th>
                 </tr>
@@ -24,7 +24,7 @@
                     <td colspan="3">Aucune methode paiement</td>
                 </tr>
                 <tr v-for="method in payment_methods">
-                    <td>{{ method.id }}</td>
+                    <!--<td>{{ method.id }}</td>-->
                     <td>{{ method.name }}</td>
                     <td class="text-center">
                         <button class="mb-2 mr-2 border-0 btn btn-transition btn-outline-warning btn-sm" title="Modifier"
@@ -58,7 +58,7 @@
         <modal name="add-method" height="auto">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="exampleModalLabel">Ajouter une méthode de paiement</h5>
+                    <h5 class="modal-title" id="exampleModalLabel">{{ modal.title }}</h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close" @click="closeModal">
                         <span aria-hidden="true">&times;</span>
                     </button>
@@ -106,6 +106,9 @@
                 pagination: {
                     current_page: 1,
                     total: 0
+                },
+                modal: {
+                    title: 'Ajouter une méthode de paiement',
                 },
                 spinnerList: false,
                 spinner: false,
@@ -240,6 +243,7 @@
             editMethod(method, action){
                 this.action = action;
                 this.method = {...method};
+                this.modal.title = "Modifier la méthode de paiement"+`[${method.id}]`
                 this.$modal.show('add-method');
             },
             deleteMethod(id){

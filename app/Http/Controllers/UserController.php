@@ -288,12 +288,15 @@ class UserController extends Controller
             ->first();
 
         if($user->status == false)
-            return new JsonResponse('error', 500);
+            return new JsonResponse('error', 400);
 
-        if( $user && Hash::check($request->password, $user->password))
+        if( $user && Hash::check($request->password, $user->password)){
+            $user->api_token = Str::random(80);
+            $user->save();
             return new UserResource($user);
+        }
         else
-            return new JsonResponse('error', 500);
+            return new JsonResponse('error', 400);
 
     }
 

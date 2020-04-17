@@ -78,7 +78,6 @@
                 <div class="position-relative form-group">
                     <label for="invoice_number" class="">Numéro de facture</label>
                     <input type="text" class="form-control form-control-sm" name="invoice_number" id="invoice_number" placeholder="" v-model="$v.invoice.invoice_number.$model" readonly>
-                    <small class="form-text text-danger" v-if="!$v.invoice.invoice_number.required">Champs requis.</small>
                 </div>
             </div>
             <div class="col-md-6">
@@ -90,11 +89,6 @@
                         {{ invoice.customer.email }}<br>
                         {{ invoice.customer.address }}
                     </div>
-                    <!--<select class="form-control" name="customer" id="customer" v-model="$v.invoice.customer_id.$model" disabled>-->
-                        <!--<option value="">-&#45;&#45; Selectionnez un client s'il vous plait &#45;&#45;</option>-->
-                        <!--<option v-for="customer in customers" v-bind:value="customer.id">{{ customer.company_name}}</option>-->
-                    <!--</select>-->
-                    <!--<small class="form-text text-danger" v-if="!$v.invoice.customer_id.required">Champs requis.</small>-->
                 </div>
             </div>
         </div>
@@ -115,7 +109,18 @@
                         <option value="credit_note">Avoir</option>
                         <option value="deposit">Accompte</option>
                     </select>
-                    <small class="form-text text-danger" v-if="!$v.invoice.type.required">Champs requis.</small>
+                </div>
+            </div>
+        </div>
+        <div class="form-row">
+            <div class="col-md-6">
+                <div class="position-relative form-group">
+                    <label class="">Mode de règlement</label>
+                    <select class="form-control form-control-sm" v-model="$v.invoice.payment_method_id.$model">
+                        <option value="">Selectionnez un mode de reglement</option>
+                        <option :value="method.id" v-for="method in payment_methods">{{ method.name }}</option>
+                    </select>
+                    <small class="form-text text-danger" v-if="!$v.invoice.payment_method_id.required">Champs requis.</small>
                 </div>
             </div>
         </div>
@@ -412,6 +417,7 @@
                 invoice: {
                     invoice_number: '',
                     title: '',
+                    payment_method_id: '',
                     customer_id: '',
                     items: [{
                         label: '',
@@ -485,6 +491,9 @@
                     }
                 },
                 type: {
+                    required
+                },
+                payment_method_id: {
                     required
                 }
 

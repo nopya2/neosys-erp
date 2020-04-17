@@ -8,8 +8,8 @@ use App\Providers\Functions;
 class Invoice extends Model
 {
     protected $fillable = [
-        'id', 'customer_id', 'user_id', 'invoice_number', 'title', 'amount_et', 'discount', 'amount_discount', 'amount', 'amount_taxes'
-        , 'created_at', 'updated_at', 'expire_at', 'status', 'type'
+        'id', 'customer_id', 'user_id', 'payment_method_id', 'invoice_number', 'title', 'amount_et', 'discount', 'amount_discount', 'amount', 'amount_taxes'
+        , 'created_at', 'updated_at', 'expire_at', 'status', 'type', 'parent_id'
     ];
 
     protected $casts = [
@@ -18,9 +18,22 @@ class Invoice extends Model
         'updated_at' => 'datetime',
     ];
 
+    public function children(){
+        return $this->hasMany( 'App\Invoice', 'parent_id', 'id' );
+    }
+
+    public function parent(){
+        return $this->hasOne( 'App\Invoice', 'id', 'parent_id' );
+    }
+
     public function customer()
     {
         return $this->belongsTo('App\Customer');
+    }
+
+    public function paymentMethod()
+    {
+        return $this->belongsTo('App\PaymentMethod');
     }
 
     public function user()
@@ -84,6 +97,8 @@ class Invoice extends Model
      * en attente: waiting
      */
     public function getStateAttribute(){
+        if($this->status === 'draft')
+            return 'draft';
         if($this->getAmountPaidAttribute() >= $this->amount)
             return 'paid';
         if($this->getAmountPaidAttribute() <= 0 && $this->expire_at < (new \DateTime()))

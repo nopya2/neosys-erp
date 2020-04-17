@@ -97,7 +97,7 @@
 
         methods: {
             loginSubmit(){
-                const authUser = {}
+                let authUser = {}
                 this.btnSubmit = false
                 this.btnLoading = true
                 this.showMessageError = false
