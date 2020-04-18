@@ -45,7 +45,7 @@
             </div>
 
             <div class="col-md-6">
-                <emails></emails>
+                <emails :email_models="{{ $email_models }}"></emails>
             </div>
         </div>
 

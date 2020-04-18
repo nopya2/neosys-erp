@@ -382,7 +382,7 @@ class InvoiceController extends Controller
 
         // (Optional) Setup the paper size and orientation
         $pdf->setPaper('A4', 'portrait');
-        $filePath = public_path('uploads/documents/invoices/temp/').'NST-I'.$invoice->invoice_number.'.pdf';
+        $filePath = public_path('uploads/documents/invoices/temp/').$invoice->invoice_number.'.pdf';
         file_put_contents($filePath, $pdf->output());
 
         $to_name = $invoice->customer->company_name;

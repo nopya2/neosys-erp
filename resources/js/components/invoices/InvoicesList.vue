@@ -471,8 +471,40 @@
             printInvoice(){
 
             },
-            sendEmail(){
-
+            sendEmail(invoice){
+                this.$swal({
+                    title: "Envoyer mail",
+                    text: "Etes-vous sur de vouloir envoyer cette facture?",
+                    showCancelButton: true,
+                    confirmButtonText: "Envoyer",
+                    confirmButtonColor: '#28A745',
+                    showLoaderOnConfirm: true,
+                    preConfirm: (login) => {
+                        return fetch(`/api/invoices/${invoice.id}?api_token=${this.api_token}`, {
+                            method: 'PATCH',
+                            body: JSON.stringify(temp),
+                            headers: {
+                                'content-type': 'application/json'
+                            }
+                        })
+                            .then(response => {
+                                if (!response.ok) {
+                                    throw new Error(response.statusText)
+                                }
+                                return response.json()
+                            })
+                            .catch(error => {
+                                this.$swal.showValidationMessage(
+                                    `Request failed: ${error}`
+                                )
+                            })
+                    },
+                    allowOutsideClick: () => !this.$swal.isLoading()
+                }).then((result) => {
+                    if (result.value) {
+                        Functions.showAlert('top-end', 'success', "E-mail envoyé!")
+                    }
+                })
             },
             duplicateInvoice(invoice){
                 this.$swal({

@@ -5629,32 +5629,23 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
     },
     addRecurrence: function addRecurrence() {},
     cancelRecurrence: function cancelRecurrence() {}
-  }, _defineProperty(_methods, "printInvoice", function printInvoice() {}), _defineProperty(_methods, "sendEmail", function sendEmail() {}), _defineProperty(_methods, "duplicateInvoice", function duplicateInvoice(invoice) {
-    this.$swal({
-      title: 'Dupliquer',
-      text: 'Etes-vous sur de vouloir dupliquer cette facture?',
-      showCancelButton: true,
-      confirmButtonText: 'Dupliquer',
-      confirmButtonColor: '#28A745' // showLoaderOnConfirm: true,
-
-    }).then(function (result) {
-      if (result.value) {
-        window.location = "/invoice/create?action=duplicate&i=".concat(invoice.id);
-      }
-    });
-  }), _defineProperty(_methods, "deleteInvoice", function deleteInvoice(invoice) {
+  }, _defineProperty(_methods, "printInvoice", function printInvoice() {}), _defineProperty(_methods, "sendEmail", function sendEmail(invoice) {
     var _this3 = this;
 
     this.$swal({
-      title: 'Supprimer',
-      text: 'Etes-vous sur de vouloir supprimer cette facture?',
+      title: "Envoyer mail",
+      text: "Etes-vous sur de vouloir envoyer cette facture?",
       showCancelButton: true,
-      confirmButtonText: 'Supprimer',
-      confirmButtonColor: '#C82333',
+      confirmButtonText: "Envoyer",
+      confirmButtonColor: '#28A745',
       showLoaderOnConfirm: true,
       preConfirm: function preConfirm(login) {
-        return fetch("/api/invoice/".concat(invoice.id, "?api_token=").concat(_this3.api_token), {
-          method: 'delete'
+        return fetch("/api/invoices/".concat(invoice.id, "?api_token=").concat(_this3.api_token), {
+          method: 'PATCH',
+          body: JSON.stringify(temp),
+          headers: {
+            'content-type': 'application/json'
+          }
         }).then(function (response) {
           if (!response.ok) {
             throw new Error(response.statusText);
@@ -5670,31 +5661,35 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
       }
     }).then(function (result) {
       if (result.value) {
-        _scripts_functions__WEBPACK_IMPORTED_MODULE_0__["Functions"].showAlert('top-end', 'warning', 'Cette facture a été supprimée');
-
-        _this3.fetchInvoices();
+        _scripts_functions__WEBPACK_IMPORTED_MODULE_0__["Functions"].showAlert('top-end', 'success', "E-mail envoyé!");
       }
     });
-  }), _defineProperty(_methods, "validateInvoice", function validateInvoice(invoice) {
+  }), _defineProperty(_methods, "duplicateInvoice", function duplicateInvoice(invoice) {
+    this.$swal({
+      title: 'Dupliquer',
+      text: 'Etes-vous sur de vouloir dupliquer cette facture?',
+      showCancelButton: true,
+      confirmButtonText: 'Dupliquer',
+      confirmButtonColor: '#28A745' // showLoaderOnConfirm: true,
+
+    }).then(function (result) {
+      if (result.value) {
+        window.location = "/invoice/create?action=duplicate&i=".concat(invoice.id);
+      }
+    });
+  }), _defineProperty(_methods, "deleteInvoice", function deleteInvoice(invoice) {
     var _this4 = this;
 
-    var temp = _objectSpread({}, invoice);
-
-    temp.status = 'validated';
     this.$swal({
-      title: "Validation",
-      text: "Etes-vous sur de vouloir valider cette facture?",
+      title: 'Supprimer',
+      text: 'Etes-vous sur de vouloir supprimer cette facture?',
       showCancelButton: true,
-      confirmButtonText: "Valider",
-      confirmButtonColor: '#28A745',
+      confirmButtonText: 'Supprimer',
+      confirmButtonColor: '#C82333',
       showLoaderOnConfirm: true,
       preConfirm: function preConfirm(login) {
-        return fetch("/api/invoices/".concat(invoice.id, "?api_token=").concat(_this4.api_token), {
-          method: 'PATCH',
-          body: JSON.stringify(temp),
-          headers: {
-            'content-type': 'application/json'
-          }
+        return fetch("/api/invoice/".concat(invoice.id, "?api_token=").concat(_this4.api_token), {
+          method: 'delete'
         }).then(function (response) {
           if (!response.ok) {
             throw new Error(response.statusText);
@@ -5710,15 +5705,55 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
       }
     }).then(function (result) {
       if (result.value) {
+        _scripts_functions__WEBPACK_IMPORTED_MODULE_0__["Functions"].showAlert('top-end', 'warning', 'Cette facture a été supprimée');
+
+        _this4.fetchInvoices();
+      }
+    });
+  }), _defineProperty(_methods, "validateInvoice", function validateInvoice(invoice) {
+    var _this5 = this;
+
+    var temp = _objectSpread({}, invoice);
+
+    temp.status = 'validated';
+    this.$swal({
+      title: "Validation",
+      text: "Etes-vous sur de vouloir valider cette facture?",
+      showCancelButton: true,
+      confirmButtonText: "Valider",
+      confirmButtonColor: '#28A745',
+      showLoaderOnConfirm: true,
+      preConfirm: function preConfirm(login) {
+        return fetch("/api/invoices/".concat(invoice.id, "?api_token=").concat(_this5.api_token), {
+          method: 'PATCH',
+          body: JSON.stringify(temp),
+          headers: {
+            'content-type': 'application/json'
+          }
+        }).then(function (response) {
+          if (!response.ok) {
+            throw new Error(response.statusText);
+          }
+
+          return response.json();
+        })["catch"](function (error) {
+          _this5.$swal.showValidationMessage("Request failed: ".concat(error));
+        });
+      },
+      allowOutsideClick: function allowOutsideClick() {
+        return !_this5.$swal.isLoading();
+      }
+    }).then(function (result) {
+      if (result.value) {
         invoice = _objectSpread({}, result.value.data);
 
-        var index = _this4.invoices.findIndex(function (x) {
+        var index = _this5.invoices.findIndex(function (x) {
           return x.id === invoice.id;
         });
 
-        if (index !== -1) _this4.invoices[index] = _objectSpread({}, invoice);
+        if (index !== -1) _this5.invoices[index] = _objectSpread({}, invoice);
 
-        _this4.$forceUpdate();
+        _this5.$forceUpdate();
 
         _scripts_functions__WEBPACK_IMPORTED_MODULE_0__["Functions"].showAlert('top-end', 'success', "Facture validé!");
       }
@@ -5789,13 +5824,23 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
 __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var vuelidate_lib_validators__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! vuelidate/lib/validators */ "./node_modules/vuelidate/lib/validators/index.js");
 /* harmony import */ var vuelidate_lib_validators__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(vuelidate_lib_validators__WEBPACK_IMPORTED_MODULE_0__);
-//
-//
-//
-//
-//
-//
-//
+/* harmony import */ var _scripts_functions__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../scripts/functions */ "./resources/js/scripts/functions.js");
+/* harmony import */ var _ckeditor_ckeditor5_build_classic__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @ckeditor/ckeditor5-build-classic */ "./node_modules/@ckeditor/ckeditor5-build-classic/build/ckeditor.js");
+/* harmony import */ var _ckeditor_ckeditor5_build_classic__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(_ckeditor_ckeditor5_build_classic__WEBPACK_IMPORTED_MODULE_2__);
+function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); if (enumerableOnly) symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); keys.push.apply(keys, symbols); } return keys; }
+
+function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; if (i % 2) { ownKeys(Object(source), true).forEach(function (key) { _defineProperty(target, key, source[key]); }); } else if (Object.getOwnPropertyDescriptors) { Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)); } else { ownKeys(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } } return target; }
+
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
+function _toConsumableArray(arr) { return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _nonIterableSpread(); }
+
+function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance"); }
+
+function _iterableToArray(iter) { if (Symbol.iterator in Object(iter) || Object.prototype.toString.call(iter) === "[object Arguments]") return Array.from(iter); }
+
+function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = new Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } }
+
 //
 //
 //
@@ -5853,18 +5898,109 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 
+
+
 /* harmony default export */ __webpack_exports__["default"] = ({
   mounted: function mounted() {},
+  props: ['email_models'],
   data: function data() {
-    return {};
+    return {
+      models: [],
+      selected: {
+        id: null,
+        object: '',
+        sender_name: '',
+        sender_email: '',
+        second_receiver: false,
+        body: '',
+        description: ''
+      },
+      spinner: false,
+      spinnerEmail: false,
+      editor: _ckeditor_ckeditor5_build_classic__WEBPACK_IMPORTED_MODULE_2___default.a,
+      editorConfig: {// The configuration of the editor.
+      }
+    };
   },
   created: function created() {
     if (window.localStorage.getItem('authUser')) {
       var authUser = JSON.parse(window.localStorage.getItem('authUser'));
       this.api_token = authUser.api_token;
     }
+
+    this.models = _toConsumableArray(this.email_models);
+    this.initSelected();
   },
-  methods: {}
+  methods: {
+    initSelected: function initSelected() {
+      var index = this.models.findIndex(function (x) {
+        return x.id === 1;
+      });
+      if (index !== -1) this.selected = _objectSpread({}, this.models[index]);
+    },
+    selectModel: function selectModel(id) {
+      var index = this.models.findIndex(function (x) {
+        return x.id === id;
+      });
+      if (index !== -1) this.selected = _objectSpread({}, this.models[index]);
+    },
+    saveModel: function saveModel() {
+      var _this = this;
+
+      this.spinner = true;
+      fetch("/api/parameters/email-models?api_token=".concat(this.api_token), {
+        method: 'PUT',
+        body: JSON.stringify(this.selected),
+        headers: {
+          'content-type': 'application/json'
+        }
+      }) // .then(res => res.json())
+      .then(function (res) {
+        _this.spinner = false;
+
+        if (res.ok) {
+          res.json().then(function (result) {
+            _scripts_functions__WEBPACK_IMPORTED_MODULE_1__["Functions"].showAlert('top-end', 'success', 'Modifications enregistrées!');
+          });
+        } else {
+          res.json().then(function (error) {
+            _scripts_functions__WEBPACK_IMPORTED_MODULE_1__["Functions"].showAlert('top-end', 'error', 'Erreur de l\'enregistrement!');
+          });
+        }
+      })["catch"](function (error) {
+        _this.spinner = false;
+        _scripts_functions__WEBPACK_IMPORTED_MODULE_1__["Functions"].showAlert('top-end', 'danger', 'Erreur traitement!');
+      });
+    },
+    sendEmail: function sendEmail() {
+      var _this2 = this;
+
+      this.spinnerEmail = true;
+      fetch("/api/parameters/send-email-test?api_token=".concat(this.api_token), {
+        method: 'POST',
+        body: JSON.stringify(this.selected),
+        headers: {
+          'content-type': 'application/json'
+        }
+      }) // .then(res => res.json())
+      .then(function (res) {
+        _this2.spinnerEmail = false;
+
+        if (res.ok) {
+          res.json().then(function (result) {
+            _scripts_functions__WEBPACK_IMPORTED_MODULE_1__["Functions"].showAlert('top-end', 'success', 'E-mail envoyé!');
+          });
+        } else {
+          res.json().then(function (error) {
+            _scripts_functions__WEBPACK_IMPORTED_MODULE_1__["Functions"].showAlert('top-end', 'error', 'Erreur d\'envoi du mail!');
+          });
+        }
+      })["catch"](function (error) {
+        _this2.spinnerEmail = false;
+        _scripts_functions__WEBPACK_IMPORTED_MODULE_1__["Functions"].showAlert('top-end', 'danger', 'Erreur traitement!');
+      });
+    }
+  }
 });
 
 /***/ }),
@@ -36714,207 +36850,324 @@ var render = function() {
   var _vm = this
   var _h = _vm.$createElement
   var _c = _vm._self._c || _h
-  return _vm._m(0)
-}
-var staticRenderFns = [
-  function() {
-    var _vm = this
-    var _h = _vm.$createElement
-    var _c = _vm._self._c || _h
-    return _c("div", { staticClass: "main-card mb-3 card" }, [
-      _c("div", { staticClass: "card-body" }, [
-        _c("h5", { staticClass: "card-title" }, [
-          _vm._v("\n            Paramétrage des e-mails\n            "),
-          _c(
-            "button",
-            { staticClass: "btn btn-success float-right mb-2 mt-0" },
-            [_vm._v("Enregistrer")]
-          )
-        ]),
-        _vm._v(" "),
-        _c("div", { staticClass: "position-relative form-group" }, [
-          _c(
-            "select",
-            { staticClass: "form-control", attrs: { name: "type" } },
-            [
-              _c("option", [_vm._v("Envoi d'un devis")]),
-              _vm._v(" "),
-              _c("option", [_vm._v("Envoi d'une facture")]),
-              _vm._v(" "),
-              _c("option", [_vm._v("Relance d'une facture")])
-            ]
-          )
-        ]),
-        _vm._v(" "),
-        _c("div", { staticClass: "_w_parameters_containers" }, [
-          _c("h2", { staticClass: "_w_parameters_headers" }, [
-            _vm._v("Modifier un e-mail : Envoi d'un devis")
-          ]),
-          _vm._v(" "),
-          _c("form", { staticClass: "scroll-area-lg" }, [
-            _c(
-              "div",
-              {
-                staticClass:
-                  "_w_parameters_content scrollbar-container ps--active-y"
-              },
-              [
-                _c("div", { staticClass: "position-relative form-group" }, [
-                  _c("label", { attrs: { for: "object" } }, [_vm._v("Objet")]),
-                  _vm._v(" "),
-                  _c("input", {
-                    staticClass: "form-control",
-                    attrs: {
-                      name: "object",
-                      id: "object",
-                      placeholder: "Votre",
-                      type: "text"
-                    }
-                  })
-                ]),
-                _vm._v(" "),
-                _c("div", { staticClass: "position-relative form-group" }, [
-                  _c("label", { attrs: { for: "senderName" } }, [
-                    _vm._v("Nom de l'expéditeur")
-                  ]),
-                  _vm._v(" "),
-                  _c("input", {
-                    staticClass: "form-control",
-                    attrs: {
-                      name: "senderName",
-                      id: "senderName",
-                      placeholder: "Votre",
-                      type: "text"
-                    }
-                  })
-                ]),
-                _vm._v(" "),
-                _c("div", { staticClass: "position-relative form-group" }, [
-                  _c("label", { attrs: { for: "senderEmail" } }, [
-                    _vm._v("E-mail de l'expéditeur")
-                  ]),
-                  _vm._v(" "),
-                  _c("input", {
-                    staticClass: "form-control",
-                    attrs: {
-                      name: "senderEmail",
-                      id: "senderEmail",
-                      placeholder: "Votre",
-                      type: "email"
-                    }
-                  })
-                ]),
-                _vm._v(" "),
-                _c("div", { staticClass: "custom-checkbox custom-control" }, [
-                  _c("label", { attrs: { for: "secondReceiver" } }, [
-                    _vm._v("Second destinataire")
-                  ]),
-                  _vm._v(" "),
-                  _c("input", {
-                    staticClass: "custom-control-input",
-                    attrs: { type: "checkbox", id: "secondReceiver" }
+  return _c("div", { staticClass: "main-card mb-3 card" }, [
+    _c("div", { staticClass: "card-body" }, [
+      _c("h5", { staticClass: "card-title" }, [
+        _vm._v("\n            Paramétrage des e-mails\n        ")
+      ]),
+      _vm._v(" "),
+      _c("div", { staticClass: "position-relative form-group text-right" }, [
+        _c(
+          "button",
+          {
+            staticClass: "btn btn-primary mb-2 mt-0 mr-2",
+            attrs: { disabled: _vm.spinnerEmail },
+            on: {
+              click: function($event) {
+                return _vm.sendEmail()
+              }
+            }
+          },
+          [
+            !_vm.spinnerEmail
+              ? _c("span", [_vm._v("M'envoyer un mail test")])
+              : _vm._e(),
+            _vm._v(" "),
+            _vm.spinnerEmail
+              ? _c("span", [
+                  _c("span", {
+                    staticClass: "spinner-border spinner-border-sm",
+                    attrs: { role: "status" }
                   }),
-                  _vm._v(" "),
-                  _c(
-                    "label",
-                    {
-                      staticClass: "custom-control-label",
-                      attrs: { for: "secondReceiver" }
-                    },
-                    [
-                      _vm._v(
-                        "Garder une copie du mail / Se mettre en copie par défaut"
-                      )
-                    ]
+                  _vm._v(" Envoi en cours...")
+                ])
+              : _vm._e()
+          ]
+        ),
+        _vm._v(" "),
+        _c(
+          "button",
+          {
+            staticClass: "btn btn-success mb-2 mt-0",
+            attrs: { disabled: _vm.spinner },
+            on: {
+              click: function($event) {
+                return _vm.saveModel()
+              }
+            }
+          },
+          [
+            !_vm.spinner ? _c("span", [_vm._v("Enregistrer")]) : _vm._e(),
+            _vm._v(" "),
+            _vm.spinner
+              ? _c("span", [
+                  _c("span", {
+                    staticClass: "spinner-border spinner-border-sm",
+                    attrs: { role: "status" }
+                  }),
+                  _vm._v(" Traitement en cours...")
+                ])
+              : _vm._e()
+          ]
+        )
+      ]),
+      _vm._v(" "),
+      _c("div", { staticClass: "position-relative form-group" }, [
+        _c(
+          "select",
+          {
+            directives: [
+              {
+                name: "model",
+                rawName: "v-model",
+                value: _vm.selected.id,
+                expression: "selected.id"
+              }
+            ],
+            staticClass: "form-control",
+            attrs: { name: "type" },
+            on: {
+              change: [
+                function($event) {
+                  var $$selectedVal = Array.prototype.filter
+                    .call($event.target.options, function(o) {
+                      return o.selected
+                    })
+                    .map(function(o) {
+                      var val = "_value" in o ? o._value : o.value
+                      return val
+                    })
+                  _vm.$set(
+                    _vm.selected,
+                    "id",
+                    $event.target.multiple ? $$selectedVal : $$selectedVal[0]
                   )
+                },
+                function($event) {
+                  return _vm.selectModel(_vm.selected.id)
+                }
+              ]
+            }
+          },
+          _vm._l(_vm.models, function(model) {
+            return _c("option", { domProps: { value: model.id } }, [
+              _vm._v(_vm._s(model.name))
+            ])
+          }),
+          0
+        )
+      ]),
+      _vm._v(" "),
+      _c("div", { staticClass: "_w_parameters_containers" }, [
+        _c("h2", { staticClass: "_w_parameters_headers" }, [
+          _vm._v("Modifier un e-mail : " + _vm._s(_vm.selected.name))
+        ]),
+        _vm._v(" "),
+        _c("form", { staticClass: "scroll-area-lg" }, [
+          _c(
+            "div",
+            {
+              staticClass:
+                "_w_parameters_content scrollbar-container ps--active-y"
+            },
+            [
+              _c("div", { staticClass: "position-relative form-group" }, [
+                _c("label", { attrs: { for: "object" } }, [_vm._v("Objet")]),
+                _vm._v(" "),
+                _c("input", {
+                  directives: [
+                    {
+                      name: "model",
+                      rawName: "v-model",
+                      value: _vm.selected.object,
+                      expression: "selected.object"
+                    }
+                  ],
+                  staticClass: "form-control",
+                  attrs: {
+                    name: "object",
+                    id: "object",
+                    placeholder: "Votre",
+                    type: "text"
+                  },
+                  domProps: { value: _vm.selected.object },
+                  on: {
+                    input: function($event) {
+                      if ($event.target.composing) {
+                        return
+                      }
+                      _vm.$set(_vm.selected, "object", $event.target.value)
+                    }
+                  }
+                })
+              ]),
+              _vm._v(" "),
+              _c("div", { staticClass: "position-relative form-group" }, [
+                _c("label", { attrs: { for: "senderName" } }, [
+                  _vm._v("Nom de l'expéditeur")
                 ]),
                 _vm._v(" "),
-                _c("div", { staticClass: "position-relative form-group" }, [
-                  _c("label", { attrs: { for: "body" } }, [
-                    _vm._v("Conteny de l'e-amil")
-                  ]),
-                  _vm._v(" "),
-                  _c("textarea", {
-                    staticClass: "form-control",
-                    attrs: { name: "body", id: "body", rows: "10" }
-                  })
+                _c("input", {
+                  directives: [
+                    {
+                      name: "model",
+                      rawName: "v-model",
+                      value: _vm.selected.sender_name,
+                      expression: "selected.sender_name"
+                    }
+                  ],
+                  staticClass: "form-control",
+                  attrs: {
+                    name: "senderName",
+                    id: "senderName",
+                    placeholder: "Votre",
+                    type: "text"
+                  },
+                  domProps: { value: _vm.selected.sender_name },
+                  on: {
+                    input: function($event) {
+                      if ($event.target.composing) {
+                        return
+                      }
+                      _vm.$set(_vm.selected, "sender_name", $event.target.value)
+                    }
+                  }
+                })
+              ]),
+              _vm._v(" "),
+              _c("div", { staticClass: "position-relative form-group" }, [
+                _c("label", { attrs: { for: "senderEmail" } }, [
+                  _vm._v("E-mail de l'expéditeur")
                 ]),
+                _vm._v(" "),
+                _c("input", {
+                  directives: [
+                    {
+                      name: "model",
+                      rawName: "v-model",
+                      value: _vm.selected.sender_email,
+                      expression: "selected.sender_email"
+                    }
+                  ],
+                  staticClass: "form-control",
+                  attrs: {
+                    name: "senderEmail",
+                    id: "senderEmail",
+                    placeholder: "Votre",
+                    type: "email"
+                  },
+                  domProps: { value: _vm.selected.sender_email },
+                  on: {
+                    input: function($event) {
+                      if ($event.target.composing) {
+                        return
+                      }
+                      _vm.$set(
+                        _vm.selected,
+                        "sender_email",
+                        $event.target.value
+                      )
+                    }
+                  }
+                })
+              ]),
+              _vm._v(" "),
+              _c("div", { staticClass: "custom-checkbox custom-control" }, [
+                _c("label", { attrs: { for: "secondReceiver" } }, [
+                  _vm._v("Second destinataire")
+                ]),
+                _vm._v(" "),
+                _c("input", {
+                  directives: [
+                    {
+                      name: "model",
+                      rawName: "v-model",
+                      value: _vm.selected.second_receiver,
+                      expression: "selected.second_receiver"
+                    }
+                  ],
+                  staticClass: "custom-control-input",
+                  attrs: { type: "checkbox", id: "secondReceiver" },
+                  domProps: {
+                    checked: Array.isArray(_vm.selected.second_receiver)
+                      ? _vm._i(_vm.selected.second_receiver, null) > -1
+                      : _vm.selected.second_receiver
+                  },
+                  on: {
+                    change: function($event) {
+                      var $$a = _vm.selected.second_receiver,
+                        $$el = $event.target,
+                        $$c = $$el.checked ? true : false
+                      if (Array.isArray($$a)) {
+                        var $$v = null,
+                          $$i = _vm._i($$a, $$v)
+                        if ($$el.checked) {
+                          $$i < 0 &&
+                            _vm.$set(
+                              _vm.selected,
+                              "second_receiver",
+                              $$a.concat([$$v])
+                            )
+                        } else {
+                          $$i > -1 &&
+                            _vm.$set(
+                              _vm.selected,
+                              "second_receiver",
+                              $$a.slice(0, $$i).concat($$a.slice($$i + 1))
+                            )
+                        }
+                      } else {
+                        _vm.$set(_vm.selected, "second_receiver", $$c)
+                      }
+                    }
+                  }
+                }),
                 _vm._v(" "),
                 _c(
-                  "div",
+                  "label",
                   {
-                    staticClass: "alert alert-info",
-                    attrs: {
-                      role: "alert",
-                      "aria-live": "polite",
-                      "aria-atomic": "true"
-                    }
+                    staticClass: "custom-control-label",
+                    attrs: { for: "secondReceiver" }
                   },
                   [
-                    _c("small", [
-                      _c("div", [
-                        _vm._v(
-                          "\n                                Vous pouvez utiliser les balises spéciales suivantes dans le contenu de l'e-mail. Elles seront remplacées\n                                par leurs vraies valeurs à l'envoi de l'e-mail.\n                            "
-                        )
-                      ]),
-                      _vm._v(" "),
-                      _c("div", [
-                        _c("div", [
-                          _c("b", [_vm._v("[devis-numero]")]),
-                          _vm._v(" : Remplacé par le numéro du devis")
-                        ]),
-                        _vm._v(" "),
-                        _c("div", [
-                          _c("b", [_vm._v("[nomprenom_utilisateur]")]),
-                          _vm._v(
-                            " : Remplacé par le prénom et le nom de l'utilisateur"
-                          )
-                        ]),
-                        _vm._v(" "),
-                        _c("div", [
-                          _c("b", [_vm._v("[email_utilisateur]")]),
-                          _vm._v(" : Remplacé par le mail de l'utilisateur")
-                        ]),
-                        _vm._v(" "),
-                        _c("div", [
-                          _c("b", [_vm._v("[lien-html]")]),
-                          _vm._v(
-                            " : Renverra un lien vers votre devis au format HTML."
-                          )
-                        ]),
-                        _vm._v(" "),
-                        _c("div", [
-                          _c("b", [_vm._v("[lien-pdf]")]),
-                          _vm._v(
-                            " : Renverra un lien vers votre devis au format PDF."
-                          )
-                        ]),
-                        _vm._v(" "),
-                        _c("div", [
-                          _c("b", [_vm._v("[interlocuteur-nom]")]),
-                          _vm._v(
-                            " : Renverra le nom du collaborateur ayant généré ce devis."
-                          )
-                        ]),
-                        _vm._v(" "),
-                        _c("div", [
-                          _c("b", [_vm._v("[contact-nom]")]),
-                          _vm._v(
-                            " : Renverra le nom du contact client noté sur ce devis."
-                          )
-                        ])
-                      ])
-                    ])
+                    _vm._v(
+                      "Garder une copie du mail / Se mettre en copie par défaut"
+                    )
                   ]
                 )
-              ]
-            )
-          ])
+              ]),
+              _vm._v(" "),
+              _c(
+                "div",
+                { staticClass: "position-relative form-group" },
+                [
+                  _c("label", {}, [_vm._v("Conteny de l'e-amil")]),
+                  _vm._v(" "),
+                  _c("ckeditor", {
+                    attrs: { editor: _vm.editor, config: _vm.editorConfig },
+                    model: {
+                      value: _vm.selected.body,
+                      callback: function($$v) {
+                        _vm.$set(_vm.selected, "body", $$v)
+                      },
+                      expression: "selected.body"
+                    }
+                  })
+                ],
+                1
+              ),
+              _vm._v(" "),
+              _c("div", {
+                domProps: { innerHTML: _vm._s(_vm.selected.description) }
+              })
+            ]
+          )
         ])
       ])
     ])
-  }
-]
+  ])
+}
+var staticRenderFns = []
 render._withStripped = true
 
 

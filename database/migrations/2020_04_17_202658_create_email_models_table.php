@@ -15,6 +15,11 @@ class CreateEmailModelsTable extends Migration
     {
         Schema::create('email_models', function (Blueprint $table) {
             $table->bigIncrements('id');
+            $table->string('object');
+            $table->string('sender_name');
+            $table->string('sender_email');
+            $table->boolean('sencond_receiver');
+            $table->text('body');
             $table->timestamps();
         });
     }

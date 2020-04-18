@@ -169,4 +169,11 @@ Route::middleware('auth:api')->delete('payment-method/{method}', 'PaymentMethodC
 //Add a payment
 Route::middleware('auth:api')->post('payment', 'PaymentController@store');
 
+/**** Parameters ****/
+Route::middleware('auth:api')->put('parameters/email-models', 'ParameterController@updateEmailModels'); // save email models
+Route::middleware('auth:api')->post('parameters/send-email-test', 'ParameterController@emailTest'); // save email models
+
+/**** Envoi de mails ****/
+Route::middleware('auth:api')->post('mails/invoice', 'InvoiceController@sendEmail'); // send email invoice
+
 
